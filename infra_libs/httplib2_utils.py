@@ -26,7 +26,7 @@ from infra_libs.utils import parse_rfc3339_epoch
 DEFAULT_TIMEOUT = 30
 
 # This is part of the API.
-if sys.platform.startswith('win'): # pragma: no cover
+if sys.platform.startswith('win'):  # pragma: no cover
   SERVICE_ACCOUNTS_CREDS_ROOT = 'C:\\creds\\service_accounts'
 else:
   SERVICE_ACCOUNTS_CREDS_ROOT = '/creds/service_accounts'
@@ -36,8 +36,7 @@ class AuthError(Exception):
   pass
 
 
-class DelegateServiceAccountCredentials(
-    oauth2client.client.OAuth2Credentials):
+class DelegateServiceAccountCredentials(oauth2client.client.OAuth2Credentials):
   """Authorizes an HTTP client with a service account for which we are an actor.
 
   This class uses the IAM:generateAccessToken API to obtain an access token for
@@ -58,7 +57,8 @@ class DelegateServiceAccountCredentials(
     """
 
     super(DelegateServiceAccountCredentials, self).__init__(
-        None, None, None, None, None, None, None)
+      None, None, None, None, None, None, None
+    )
 
     self._http = http
     self._sa_email = service_account_email
@@ -79,25 +79,29 @@ class DelegateServiceAccountCredentials(
       "scope": self._scopes,
     }
 
-    response, content = (
-        self._http.request(
-            uri='https://iamcredentials.googleapis.com/v1/projects/%s/'
-            'serviceAccounts/%s:generateAccessToken' % (urllib.parse.quote_plus(
-                self._project), urllib.parse.quote_plus(self._sa_email)),
-            method='POST',
-            body=json.dumps(req),
-            headers={
-                'Content-Type': 'application/json',
-            },
-        ))
+    response, content = self._http.request(
+      uri='https://iamcredentials.googleapis.com/v1/projects/%s/'
+      'serviceAccounts/%s:generateAccessToken'
+      % (
+        urllib.parse.quote_plus(self._project),
+        urllib.parse.quote_plus(self._sa_email),
+      ),
+      method='POST',
+      body=json.dumps(req),
+      headers={
+        'Content-Type': 'application/json',
+      },
+    )
 
     if response.status != 200:
-      msg = ('Unable to generate access token,'
-             'http error code %d, content: %s'
-             % (response.status, content))
+      msg = (
+        'Unable to generate access token,'
+        'http error code %d, content: %s' % (response.status, content)
+      )
       logging.error(msg)
-      raise AuthError('Code: %d, Reason: %s'
-                      % (response.status, response.reason))
+      raise AuthError(
+        'Code: %d, Reason: %s' % (response.status, response.reason)
+      )
 
     resp = json.loads(content)
     self.access_token = resp['accessToken']
@@ -107,8 +111,9 @@ class DelegateServiceAccountCredentials(
 class RetriableHttp(object):
   """A httplib2.Http object that retries on failure."""
 
-  def __init__(self, http, max_tries=5, backoff_time=1,
-               retrying_statuses_fn=None):
+  def __init__(
+    self, http, max_tries=5, backoff_time=1, retrying_statuses_fn=None
+  ):
     """
     Args:
       http: an httplib2.Http instance
@@ -120,28 +125,41 @@ class RetriableHttp(object):
     self._http = http
     self._max_tries = max_tries
     self._backoff_time = backoff_time
-    self._retrying_statuses_fn = retrying_statuses_fn or \
-                                 set(range(500,599)).__contains__
+    self._retrying_statuses_fn = (
+      retrying_statuses_fn or set(range(500, 599)).__contains__
+    )
 
   def request(self, uri, method='GET', body=None, *args, **kwargs):
     for i in range(1, self._max_tries + 1):
       try:
-        response, content = self._http.request(uri, method, body, *args,
-                                               **kwargs)
+        response, content = self._http.request(
+          uri, method, body, *args, **kwargs
+        )
 
         if self._retrying_statuses_fn(response.status):
-          logging.info('RetriableHttp: attempt %d receiving status %d, %s',
-                       i, response.status,
-                       'final attempt' if i == self._max_tries else \
-                       'will retry')
+          logging.info(
+            'RetriableHttp: attempt %d receiving status %d, %s',
+            i,
+            response.status,
+            'final attempt' if i == self._max_tries else 'will retry',
+          )
         else:
           break
-      except (ValueError, errors.Error,
-              socket.timeout, socket.error, socket.herror, socket.gaierror,
-              httplib2.HttpLib2Error) as error:
-        logging.info('RetriableHttp: attempt %d received exception: %s, %s',
-                     i, error, 'final attempt' if i == self._max_tries else \
-                     'will retry')
+      except (
+        ValueError,
+        errors.Error,
+        socket.timeout,
+        socket.error,
+        socket.herror,
+        socket.gaierror,
+        httplib2.HttpLib2Error,
+      ) as error:
+        logging.info(
+          'RetriableHttp: attempt %d received exception: %s, %s',
+          i,
+          error,
+          'final attempt' if i == self._max_tries else 'will retry',
+        )
         if i == self._max_tries:
           raise
       time.sleep(self._backoff_time)
@@ -152,8 +170,13 @@ class RetriableHttp(object):
     return getattr(self._http, name)
 
   def __setattr__(self, name, value):
-    if name in ('request', '_http', '_max_tries', '_backoff_time',
-                '_retrying_statuses_fn'):
+    if name in (
+      'request',
+      '_http',
+      '_max_tries',
+      '_backoff_time',
+      '_retrying_statuses_fn',
+    ):
       self.__dict__[name] = value
     else:
       setattr(self._http, name, value)
@@ -162,8 +185,9 @@ class RetriableHttp(object):
 class InstrumentedHttp(httplib2.Http):
   """A httplib2.Http object that reports ts_mon metrics about its requests."""
 
-  def __init__(self, name, time_fn=time.time, timeout=DEFAULT_TIMEOUT,
-               **kwargs):
+  def __init__(
+    self, name, time_fn=time.time, timeout=DEFAULT_TIMEOUT, **kwargs
+  ):
     """
     Args:
       name: An identifier for the HTTP requests made by this object.
@@ -192,7 +216,8 @@ class InstrumentedHttp(httplib2.Http):
     start_time = self.time_fn()
     try:
       response, content = super(InstrumentedHttp, self).request(
-          uri, method, body, *args, **kwargs)
+        uri, method, body, *args, **kwargs
+      )
     except socket.timeout:
       self._update_metrics(http_metrics.STATUS_TIMEOUT, start_time)
       raise
@@ -215,8 +240,10 @@ class InstrumentedHttp(httplib2.Http):
 
 class HttpMock(object):
   """Mock of httplib2.Http"""
-  HttpCall = collections.namedtuple('HttpCall', ('uri', 'method', 'body',
-                                                 'headers'))
+
+  HttpCall = collections.namedtuple(
+    'HttpCall', ('uri', 'method', 'body', 'headers')
+  )
 
   def __init__(self, uris):
     """
@@ -249,12 +276,15 @@ class HttpMock(object):
       self._uris.append((compiled_uri, new_headers, body))
 
   # pylint: disable=unused-argument
-  def request(self, uri,
-              method='GET',
-              body=None,
-              headers=None,
-              redirections=1,
-              connection_type=None):
+  def request(
+    self,
+    uri,
+    method='GET',
+    body=None,
+    headers=None,
+    redirections=1,
+    connection_type=None,
+  ):
     self.requests_made.append(self.HttpCall(uri, method, body, headers))
     headers = None
     body = None

@@ -25,7 +25,6 @@ DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
 
 @mock.patch.object(config, 'load_machine_config', lambda x: {})
 class GlobalsTest(unittest.TestCase):
-
   def setUp(self):
     super(GlobalsTest, self).setUp()
     interface.state = interface.State()
@@ -39,22 +38,25 @@ class GlobalsTest(unittest.TestCase):
 
   @mock.patch('requests.get', autospec=True)
   @mock.patch('socket.getfqdn', autospec=True)
-  @mock.patch('infra_libs.ts_mon.common.monitors.CredentialFactory.'
-              'from_string')
+  @mock.patch('infra_libs.ts_mon.common.monitors.CredentialFactory.from_string')
   def test_https_monitor_args(self, _load_creds, fake_fqdn, fake_get):
     print([_load_creds, fake_fqdn, fake_get])
     fake_fqdn.return_value = 'slave1-a1.reg.tld'
     fake_get.return_value.side_effect = requests.exceptions.ConnectionError
     p = argparse.ArgumentParser()
     config.add_argparse_options(p)
-    args = p.parse_args([
-        '--ts-mon-credentials', '/path/to/creds.p8.json',
-        '--ts-mon-endpoint', 'https://test/random:insert'])
+    args = p.parse_args(
+      [
+        '--ts-mon-credentials',
+        '/path/to/creds.p8.json',
+        '--ts-mon-endpoint',
+        'https://test/random:insert',
+      ]
+    )
 
     config.process_argparse_options(args)
 
-    self.assertIsInstance(interface.state.global_monitor,
-                          monitors.HttpsMonitor)
+    self.assertIsInstance(interface.state.global_monitor, monitors.HttpsMonitor)
 
     self.assertIsInstance(interface.state.target, targets.DeviceTarget)
     self.assertEquals(interface.state.target.hostname, 'slave1-a1')
@@ -70,9 +72,14 @@ class GlobalsTest(unittest.TestCase):
     fake_get.return_value.side_effect = requests.exceptions.ConnectionError
     p = argparse.ArgumentParser()
     config.add_argparse_options(p)
-    args = p.parse_args([
-        '--ts-mon-credentials', '/path/to/creds.p8.json',
-        '--ts-mon-endpoint', 'unsupported://www.googleapis.com/some/api'])
+    args = p.parse_args(
+      [
+        '--ts-mon-credentials',
+        '/path/to/creds.p8.json',
+        '--ts-mon-endpoint',
+        'unsupported://www.googleapis.com/some/api',
+      ]
+    )
     config.process_argparse_options(args)
     self.assertIsInstance(interface.state.target, targets.DeviceTarget)
     self.assertEquals(interface.state.target.hostname, 'slave1-a1')
@@ -85,9 +92,14 @@ class GlobalsTest(unittest.TestCase):
     fake_get.return_value.side_effect = requests.exceptions.ConnectionError
     p = argparse.ArgumentParser()
     config.add_argparse_options(p)
-    args = p.parse_args([
-        '--ts-mon-credentials', '/path/to/creds.p8.json',
-        '--ts-mon-endpoint', 'unsupported://www.googleapis.com/some/api'])
+    args = p.parse_args(
+      [
+        '--ts-mon-credentials',
+        '/path/to/creds.p8.json',
+        '--ts-mon-endpoint',
+        'unsupported://www.googleapis.com/some/api',
+      ]
+    )
     config.process_argparse_options(args)
     self.assertIsInstance(interface.state.target, targets.DeviceTarget)
     self.assertEquals(interface.state.target.hostname, 'slave1-a1')
@@ -100,13 +112,17 @@ class GlobalsTest(unittest.TestCase):
     fake_get.return_value.side_effect = requests.exceptions.ConnectionError
     p = argparse.ArgumentParser()
     config.add_argparse_options(p)
-    args = p.parse_args([
-        '--ts-mon-credentials', '/path/to/creds.p8.json',
-        '--ts-mon-endpoint', 'unsupported://www.googleapis.com/some/api'])
+    args = p.parse_args(
+      [
+        '--ts-mon-credentials',
+        '/path/to/creds.p8.json',
+        '--ts-mon-endpoint',
+        'unsupported://www.googleapis.com/some/api',
+      ]
+    )
     config.process_argparse_options(args)
 
-    self.assertIsInstance(interface.state.global_monitor,
-                          monitors.NullMonitor)
+    self.assertIsInstance(interface.state.global_monitor, monitors.NullMonitor)
 
   @mock.patch('requests.get', autospec=True)
   @mock.patch('socket.getfqdn', autospec=True)
@@ -115,13 +131,17 @@ class GlobalsTest(unittest.TestCase):
     fake_get.return_value.side_effect = requests.exceptions.ConnectionError
     p = argparse.ArgumentParser()
     config.add_argparse_options(p)
-    args = p.parse_args([
-        '--ts-mon-credentials', '/path/to/creds.p8.json',
-        '--ts-mon-endpoint', 'none'])
+    args = p.parse_args(
+      [
+        '--ts-mon-credentials',
+        '/path/to/creds.p8.json',
+        '--ts-mon-endpoint',
+        'none',
+      ]
+    )
     config.process_argparse_options(args)
 
-    self.assertIsInstance(interface.state.global_monitor,
-                          monitors.NullMonitor)
+    self.assertIsInstance(interface.state.global_monitor, monitors.NullMonitor)
 
   @mock.patch('requests.get', autospec=True)
   @mock.patch('socket.getfqdn', autospec=True)
@@ -149,12 +169,22 @@ class GlobalsTest(unittest.TestCase):
   def test_device_args(self):
     p = argparse.ArgumentParser()
     config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-credentials', '/path/to/creds.p8.json',
-                         '--ts-mon-target-type', 'device',
-                         '--ts-mon-device-region', 'reg',
-                         '--ts-mon-device-role', 'role',
-                         '--ts-mon-device-network', 'net',
-                         '--ts-mon-device-hostname', 'host'])
+    args = p.parse_args(
+      [
+        '--ts-mon-credentials',
+        '/path/to/creds.p8.json',
+        '--ts-mon-target-type',
+        'device',
+        '--ts-mon-device-region',
+        'reg',
+        '--ts-mon-device-role',
+        'role',
+        '--ts-mon-device-network',
+        'net',
+        '--ts-mon-device-hostname',
+        'host',
+      ]
+    )
     config.process_argparse_options(args)
     self.assertEqual(interface.state.target.region, 'reg')
     self.assertEqual(interface.state.target.role, 'role')
@@ -164,13 +194,23 @@ class GlobalsTest(unittest.TestCase):
   def test_autogen_device_args(self):
     p = argparse.ArgumentParser()
     config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-credentials', '/path/to/creds.p8.json',
-                         '--ts-mon-target-type', 'device',
-                         '--ts-mon-device-region', 'reg',
-                         '--ts-mon-device-role', 'role',
-                         '--ts-mon-device-network', 'net',
-                         '--ts-mon-device-hostname', 'host',
-                         '--ts-mon-autogen-hostname'])
+    args = p.parse_args(
+      [
+        '--ts-mon-credentials',
+        '/path/to/creds.p8.json',
+        '--ts-mon-target-type',
+        'device',
+        '--ts-mon-device-region',
+        'reg',
+        '--ts-mon-device-role',
+        'role',
+        '--ts-mon-device-network',
+        'net',
+        '--ts-mon-device-hostname',
+        'host',
+        '--ts-mon-autogen-hostname',
+      ]
+    )
     config.process_argparse_options(args)
     self.assertEqual(interface.state.target.region, 'reg')
     self.assertEqual(interface.state.target.role, 'role')
@@ -179,18 +219,30 @@ class GlobalsTest(unittest.TestCase):
 
   def test_autogen_device_config(self):
     with mock.patch.object(
-        config, 'load_machine_config', lambda x: {
-            'autogen_hostname': True,
-            'credentials': '/path/to/creds.p8.json',
-            'endpoint': 'test://endpoint'
-        }):
+      config,
+      'load_machine_config',
+      lambda x: {
+        'autogen_hostname': True,
+        'credentials': '/path/to/creds.p8.json',
+        'endpoint': 'test://endpoint',
+      },
+    ):
       p = argparse.ArgumentParser()
       config.add_argparse_options(p)
-      args = p.parse_args([
-          '--ts-mon-target-type', 'device', '--ts-mon-device-region', 'reg',
-          '--ts-mon-device-role', 'role', '--ts-mon-device-network', 'net',
-          '--ts-mon-device-hostname', 'host'
-      ])
+      args = p.parse_args(
+        [
+          '--ts-mon-target-type',
+          'device',
+          '--ts-mon-device-region',
+          'reg',
+          '--ts-mon-device-role',
+          'role',
+          '--ts-mon-device-network',
+          'net',
+          '--ts-mon-device-hostname',
+          'host',
+        ]
+      )
       config.process_argparse_options(args)
       self.assertEqual(interface.state.target.region, 'reg')
       self.assertEqual(interface.state.target.role, 'role')
@@ -200,13 +252,24 @@ class GlobalsTest(unittest.TestCase):
   def test_task_args(self):
     p = argparse.ArgumentParser()
     config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-credentials', '/path/to/creds.p8.json',
-                         '--ts-mon-target-type', 'task',
-                         '--ts-mon-task-service-name', 'serv',
-                         '--ts-mon-task-job-name', 'job',
-                         '--ts-mon-task-region', 'reg',
-                         '--ts-mon-task-hostname', 'host',
-                         '--ts-mon-task-number', '1'])
+    args = p.parse_args(
+      [
+        '--ts-mon-credentials',
+        '/path/to/creds.p8.json',
+        '--ts-mon-target-type',
+        'task',
+        '--ts-mon-task-service-name',
+        'serv',
+        '--ts-mon-task-job-name',
+        'job',
+        '--ts-mon-task-region',
+        'reg',
+        '--ts-mon-task-hostname',
+        'host',
+        '--ts-mon-task-number',
+        '1',
+      ]
+    )
     config.process_argparse_options(args)
     self.assertEqual(interface.state.target.service_name, 'serv')
     self.assertEqual(interface.state.target.job_name, 'job')
@@ -217,14 +280,25 @@ class GlobalsTest(unittest.TestCase):
   def test_autogen_task_args(self):
     p = argparse.ArgumentParser()
     config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-credentials', '/path/to/creds.p8.json',
-                         '--ts-mon-target-type', 'task',
-                         '--ts-mon-task-service-name', 'serv',
-                         '--ts-mon-task-job-name', 'job',
-                         '--ts-mon-task-region', 'reg',
-                         '--ts-mon-task-hostname', 'host',
-                         '--ts-mon-task-number', '1',
-                         '--ts-mon-autogen-hostname'])
+    args = p.parse_args(
+      [
+        '--ts-mon-credentials',
+        '/path/to/creds.p8.json',
+        '--ts-mon-target-type',
+        'task',
+        '--ts-mon-task-service-name',
+        'serv',
+        '--ts-mon-task-job-name',
+        'job',
+        '--ts-mon-task-region',
+        'reg',
+        '--ts-mon-task-hostname',
+        'host',
+        '--ts-mon-task-number',
+        '1',
+        '--ts-mon-autogen-hostname',
+      ]
+    )
     config.process_argparse_options(args)
     self.assertEqual(interface.state.target.service_name, 'serv')
     self.assertEqual(interface.state.target.job_name, 'job')
@@ -234,18 +308,32 @@ class GlobalsTest(unittest.TestCase):
 
   def test_autogen_task_config(self):
     with mock.patch.object(
-        config, 'load_machine_config', lambda x: {
-            'autogen_hostname': True,
-            'credentials': '/path/to/creds.p8.json',
-            'endpoint': 'test://endpoint'
-        }):
+      config,
+      'load_machine_config',
+      lambda x: {
+        'autogen_hostname': True,
+        'credentials': '/path/to/creds.p8.json',
+        'endpoint': 'test://endpoint',
+      },
+    ):
       p = argparse.ArgumentParser()
       config.add_argparse_options(p)
-      args = p.parse_args([
-          '--ts-mon-target-type', 'task', '--ts-mon-task-service-name', 'serv',
-          '--ts-mon-task-job-name', 'job', '--ts-mon-task-region', 'reg',
-          '--ts-mon-task-hostname', 'host', '--ts-mon-task-number', '1'
-      ])
+      args = p.parse_args(
+        [
+          '--ts-mon-target-type',
+          'task',
+          '--ts-mon-task-service-name',
+          'serv',
+          '--ts-mon-task-job-name',
+          'job',
+          '--ts-mon-task-region',
+          'reg',
+          '--ts-mon-task-hostname',
+          'host',
+          '--ts-mon-task-number',
+          '1',
+        ]
+      )
       config.process_argparse_options(args)
       self.assertEqual(interface.state.target.service_name, 'serv')
       self.assertEqual(interface.state.target.job_name, 'job')
@@ -256,24 +344,44 @@ class GlobalsTest(unittest.TestCase):
   def test_task_args_missing_service_name(self):
     p = argparse.ArgumentParser()
     config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-credentials', '/path/to/creds.p8.json',
-                         '--ts-mon-target-type', 'task',
-                         '--ts-mon-task-job-name', 'job',
-                         '--ts-mon-task-region', 'reg',
-                         '--ts-mon-task-hostname', 'host',
-                         '--ts-mon-task-number', '1'])
+    args = p.parse_args(
+      [
+        '--ts-mon-credentials',
+        '/path/to/creds.p8.json',
+        '--ts-mon-target-type',
+        'task',
+        '--ts-mon-task-job-name',
+        'job',
+        '--ts-mon-task-region',
+        'reg',
+        '--ts-mon-task-hostname',
+        'host',
+        '--ts-mon-task-number',
+        '1',
+      ]
+    )
     with self.assertRaises(SystemExit):
       config.process_argparse_options(args)
 
   def test_task_args_missing_job_name(self):
     p = argparse.ArgumentParser()
     config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-credentials', '/path/to/creds.p8.json',
-                         '--ts-mon-target-type', 'task',
-                         '--ts-mon-task-service-name', 'serv',
-                         '--ts-mon-task-region', 'reg',
-                         '--ts-mon-task-hostname', 'host',
-                         '--ts-mon-task-number', '1'])
+    args = p.parse_args(
+      [
+        '--ts-mon-credentials',
+        '/path/to/creds.p8.json',
+        '--ts-mon-target-type',
+        'task',
+        '--ts-mon-task-service-name',
+        'serv',
+        '--ts-mon-task-region',
+        'reg',
+        '--ts-mon-task-hostname',
+        'host',
+        '--ts-mon-task-number',
+        '1',
+      ]
+    )
     with self.assertRaises(SystemExit):
       config.process_argparse_options(args)
 
@@ -318,7 +426,6 @@ class GlobalsTest(unittest.TestCase):
 
 
 class ConfigTest(unittest.TestCase):
-
   def test_load_machine_config(self):
     with infra_libs.temporary_directory() as temp_dir:
       filename = os.path.join(temp_dir, 'config')

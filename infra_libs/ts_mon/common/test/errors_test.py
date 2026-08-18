@@ -6,21 +6,21 @@ import unittest
 
 from infra_libs.ts_mon.common import errors
 
-class ErrorsTest(unittest.TestCase):
 
+class ErrorsTest(unittest.TestCase):
   ERRORS = [
-      (errors.MonitoringDecreasingValueError, ('test', 1, 0)),
-      (errors.MonitoringDuplicateRegistrationError, ('test',)),
-      (errors.MonitoringIncrementUnsetValueError, ('test',)),
-      (errors.MonitoringInvalidValueTypeError, ('test', 'foo')),
-      (errors.MonitoringInvalidFieldTypeError, ('test', 'foo', 'bar')),
-      (errors.MonitoringTooManyFieldsError, ('test', {'foo': 'bar'})),
-      (errors.MonitoringNoConfiguredMonitorError, ('test',)),
-      (errors.MonitoringNoConfiguredMonitorError, (None,)),
-      (errors.MonitoringNoConfiguredTargetError, ('test',)),
-      (errors.MonitoringFailedToFlushAllMetricsError, (3,)),
-      (errors.MetricDefinitionError, ('foo')),
-      (errors.WrongFieldsError, ('foo', ['a'], ['a', 'b'])),
+    (errors.MonitoringDecreasingValueError, ('test', 1, 0)),
+    (errors.MonitoringDuplicateRegistrationError, ('test',)),
+    (errors.MonitoringIncrementUnsetValueError, ('test',)),
+    (errors.MonitoringInvalidValueTypeError, ('test', 'foo')),
+    (errors.MonitoringInvalidFieldTypeError, ('test', 'foo', 'bar')),
+    (errors.MonitoringTooManyFieldsError, ('test', {'foo': 'bar'})),
+    (errors.MonitoringNoConfiguredMonitorError, ('test',)),
+    (errors.MonitoringNoConfiguredMonitorError, (None,)),
+    (errors.MonitoringNoConfiguredTargetError, ('test',)),
+    (errors.MonitoringFailedToFlushAllMetricsError, (3,)),
+    (errors.MetricDefinitionError, ('foo')),
+    (errors.WrongFieldsError, ('foo', ['a'], ['a', 'b'])),
   ]
 
   def test_smoke(self):

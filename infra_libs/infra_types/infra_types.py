@@ -55,14 +55,15 @@ class FrozenDict(collections_abc.Mapping):
 
   Modified From: http://stackoverflow.com/a/2704866
   """
+
   def __init__(self, *args, **kwargs):
     self._d = collections.OrderedDict(*args, **kwargs)
 
     # Calculate the hash immediately so that we know all the items are
     # hashable too.
-    self._hash = functools.reduce(operator.xor,
-                                  (hash(i) for i in enumerate(self._d.items())),
-                                  0)
+    self._hash = functools.reduce(
+      operator.xor, (hash(i) for i in enumerate(self._d.items())), 0
+    )
 
   def __eq__(self, other):
     if not isinstance(other, collections_abc.Mapping):

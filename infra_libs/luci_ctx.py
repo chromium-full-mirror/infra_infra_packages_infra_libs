@@ -22,6 +22,7 @@ _UNSET = object()
 _LUCI_CONTEXT = _UNSET
 _LOCK = threading.Lock()
 
+
 class Error(Exception):
   """Raised if LUCI_CONTEXT cannot be loaded due to unexpected error."""
 
@@ -45,6 +46,7 @@ def read(section_key, environ=None):
     with _LOCK:
       _LUCI_CONTEXT = _load(environ)
   return copy.deepcopy(_LUCI_CONTEXT.get(section_key, None))
+
 
 ###
 

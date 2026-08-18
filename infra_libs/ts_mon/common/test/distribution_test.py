@@ -39,7 +39,6 @@ class BucketerTestBase(unittest.TestCase):
       b.bucket_boundaries(len(expected_lower_bounds))
 
 
-
 class FixedWidthBucketerTest(BucketerTestBase):
   def test_equality(self):
     b = distribution.FixedWidthBucketer(width=10, num_finite_buckets=8)
@@ -76,7 +75,8 @@ class FixedWidthBucketerTest(BucketerTestBase):
 class GeometricBucketerTest(BucketerTestBase):
   def test_equality(self):
     b = distribution.GeometricBucketer(
-        growth_factor=4, num_finite_buckets=4, scale=.1)
+      growth_factor=4, num_finite_buckets=4, scale=0.1
+    )
     self.assertEquals(b, b)
 
   def test_negative_size(self):
@@ -100,14 +100,15 @@ class GeometricBucketerTest(BucketerTestBase):
     self.assertLowerBounds(b, [float('-Inf'), 1, 4, 16, 64, 256])
 
   def test_scale(self):
-    b = distribution.GeometricBucketer(growth_factor=4, num_finite_buckets=4,
-                                       scale=.1)
+    b = distribution.GeometricBucketer(
+      growth_factor=4, num_finite_buckets=4, scale=0.1
+    )
     # bucket lower bounds will be approximately [float('-Inf'), .1, .4, 1.6,
     # 6.4, 25.6], but to avoid floating point errors affecting test assert on
     # bucket_for_value instead of using assertLowerBounds.
     self.assertEquals(0, b.bucket_for_value(float('-Inf')))
-    self.assertEquals(0, b.bucket_for_value(.05))
-    self.assertEquals(1, b.bucket_for_value(.2))
+    self.assertEquals(0, b.bucket_for_value(0.05))
+    self.assertEquals(1, b.bucket_for_value(0.2))
     self.assertEquals(5, b.bucket_for_value(float('Inf')))
 
   def test_bucket_for_value(self):
@@ -182,7 +183,8 @@ class DistributionTest(unittest.TestCase):
 
   def test_overflow_bucket(self):
     d = distribution.Distribution(
-        distribution.FixedWidthBucketer(width=10, num_finite_buckets=10))
+      distribution.FixedWidthBucketer(width=10, num_finite_buckets=10)
+    )
 
     d.add(100)
 

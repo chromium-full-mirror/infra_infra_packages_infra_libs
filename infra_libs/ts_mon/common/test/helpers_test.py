@@ -69,8 +69,9 @@ class ScopedMeasureTimeTest(unittest.TestCase):
   def setUp(self):
     # To avoid floating point nightmare, use values which are exact in IEEE754.
     self.time_fn = mock.Mock(time.time, autospec=True, side_effect=[0.25, 0.50])
-    self.metric = mock.create_autospec(metrics.CumulativeDistributionMetric,
-                                       spec_set=True)
+    self.metric = mock.create_autospec(
+      metrics.CumulativeDistributionMetric, spec_set=True
+    )
     self.metric.field_spec = [metrics.StringField('status')]
     self.metric.units = metrics.MetricsDataUnits.SECONDS
 
@@ -125,8 +126,9 @@ class ScopedMeasureTimeTest(unittest.TestCase):
   def test_custom_success(self):
     self.metric.field_spec = [metrics.StringField('label')]
     self.metric.units = metrics.MetricsDataUnits.MILLISECONDS
-    with helpers.ScopedMeasureTime(self.metric, 'label', 'ok', 'fail',
-                                   time_fn=self.time_fn):
+    with helpers.ScopedMeasureTime(
+      self.metric, 'label', 'ok', 'fail', time_fn=self.time_fn
+    ):
       pass
     self.metric.add.assert_called_once_with(250.0, {'label': 'ok'})
 
@@ -134,22 +136,32 @@ class ScopedMeasureTimeTest(unittest.TestCase):
     self.metric.field_spec = [metrics.StringField('label')]
     self.metric.units = metrics.MetricsDataUnits.MICROSECONDS
     with self.assertRaises(_CustomException):
-      with helpers.ScopedMeasureTime(self.metric, 'label', 'ok', 'fail',
-                                     time_fn=self.time_fn):
+      with helpers.ScopedMeasureTime(
+        self.metric, 'label', 'ok', 'fail', time_fn=self.time_fn
+      ):
         raise _CustomException()
     self.metric.add.assert_called_once_with(250000.0, {'label': 'fail'})
 
   def test_extra_fields_should_exclude_status(self):
     with self.assertRaises(AssertionError):
-      helpers.ScopedMeasureTime(self.metric,
-                                extra_fields_values={'status': 'x'})
+      helpers.ScopedMeasureTime(
+        self.metric, extra_fields_values={'status': 'x'}
+      )
 
   def test_extra_fields(self):
-    self.metric.field_spec = [metrics.StringField('custom'),
-                              metrics.StringField('type')]
-    with helpers.ScopedMeasureTime(self.metric, 'custom', 'ok', 'fail',
-                                   extra_fields_values={'type': 'normal'},
-                                   time_fn=self.time_fn):
+    self.metric.field_spec = [
+      metrics.StringField('custom'),
+      metrics.StringField('type'),
+    ]
+    with helpers.ScopedMeasureTime(
+      self.metric,
+      'custom',
+      'ok',
+      'fail',
+      extra_fields_values={'type': 'normal'},
+      time_fn=self.time_fn,
+    ):
       pass
-    self.metric.add.assert_called_once_with(0.25, {'custom': 'ok',
-                                                   'type': 'normal'})
+    self.metric.add.assert_called_once_with(
+      0.25, {'custom': 'ok', 'type': 'normal'}
+    )

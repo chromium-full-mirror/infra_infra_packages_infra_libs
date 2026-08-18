@@ -19,6 +19,7 @@ def default_modify_fn(name):
     if delta < 0:
       raise errors.MonitoringDecreasingValueError(name, None, delta)
     return value + delta
+
   return _modify_fn
 
 
@@ -153,8 +154,7 @@ class _TargetFieldsValues(object):
     return self._start_times[self.gen_key(target_fields)]
 
   def get_value(self, fields, target_fields, default=None):
-    return self._get_target_values(target_fields).get(
-        fields, default)
+    return self._get_target_values(target_fields).get(fields, default)
 
   def set_value(self, fields, target_fields, value, time_fn=None):
     self._get_target_values(target_fields)[fields] = value
@@ -207,8 +207,9 @@ class InProcessMetricStore(MetricStore):
 
   def iter_field_values(self, name):
     return itertools.chain.from_iterable(
-        six.iteritems(x)
-        for _, x in self._entry(name).iter_targets(self._state.target))
+      six.iteritems(x)
+      for _, x in self._entry(name).iter_targets(self._state.target)
+    )
 
   def get_all(self):
     # Make a copy of the metric values in case another thread (or this
@@ -220,11 +221,15 @@ class InProcessMetricStore(MetricStore):
     for name, metric_values in six.iteritems(values):
       if name not in self._state.metrics:
         continue
-      targets = metric_values.iter_targets_with_start_times(
-          self._state.target)
+      targets = metric_values.iter_targets_with_start_times(self._state.target)
       for target, fields_values, start_times in targets:
-        yield (target, self._state.metrics[name], start_times, end_time,
-               fields_values)
+        yield (
+          target,
+          self._state.metrics[name],
+          start_times,
+          end_time,
+          fields_values,
+        )
 
   def set(self, name, fields, target_fields, value, enforce_ge=False):
     with self._thread_lock:
@@ -243,8 +248,12 @@ class InProcessMetricStore(MetricStore):
       modify_fn = default_modify_fn(name)
 
     with self._thread_lock:
-      self._entry(name).set_value(fields, target_fields, modify_fn(
-          self.get(name, fields, target_fields, 0), delta), self._time_fn)
+      self._entry(name).set_value(
+        fields,
+        target_fields,
+        modify_fn(self.get(name, fields, target_fields, 0), delta),
+        self._time_fn,
+      )
 
   def reset_for_unittest(self, name=None):
     if name is not None:

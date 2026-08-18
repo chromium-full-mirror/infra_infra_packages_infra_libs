@@ -30,21 +30,22 @@ class Field(object):
   def __init__(self, name):
     if not self.FIELD_NAME_PATTERN.match(name):
       raise errors.MetricDefinitionError(
-          'Invalid metric field name "%s" - must match the regex "%s"' % (
-                name, self.FIELD_NAME_PATTERN.pattern))
+        'Invalid metric field name "%s" - must match the regex "%s"'
+        % (name, self.FIELD_NAME_PATTERN.pattern)
+      )
 
     self.name = name
 
   def __eq__(self, other):
     # pylint: disable=unidiomatic-typecheck
-    return (type(self) == type(other) and
-            self.__dict__ == other.__dict__)
+    return type(self) == type(other) and self.__dict__ == other.__dict__
 
   def validate_value(self, metric_name, value):
     # pylint: disable=isinstance-second-argument-not-valid-type
     if not isinstance(value, self.allowed_python_types):
       raise errors.MonitoringInvalidFieldTypeError(
-          metric_name, self.name, value)
+        metric_name, self.name, value
+      )
 
   def populate_proto(self, proto, value):
     setattr(proto, self.field_name, value)
@@ -101,8 +102,9 @@ class Metric(object):
   See http://go/inframon-doc for help designing and using your metrics.
   """
 
-  def __init__(self, name, description, field_spec, units=None,
-               target_type=None):
+  def __init__(
+    self, name, description, field_spec, units=None, target_type=None
+  ):
     """Create an instance of a Metric.
 
     Args:
@@ -126,10 +128,12 @@ class Metric(object):
       raise errors.MetricDefinitionError('Metric description must be a string')
     if not description:
       raise errors.MetricDefinitionError('Metric must have a description')
-    if (not isinstance(field_spec, (list, tuple)) or
-        any(not isinstance(x, Field) for x in field_spec)):
+    if not isinstance(field_spec, (list, tuple)) or any(
+      not isinstance(x, Field) for x in field_spec
+    ):
       raise errors.MetricDefinitionError(
-          'Metric constructor takes a list of Fields, or None')
+        'Metric constructor takes a list of Fields, or None'
+      )
     if len(field_spec) > 12:
       # Monarch imposes a limit of a cardinality of 5000 for a single metric
       # (see http://shortn/_WBupjZf2of).
@@ -139,11 +143,13 @@ class Metric(object):
       # Note that since a combination of 5 built-in fields is fixed, we do
       # not need to count them.
       raise errors.MonitoringTooManyFieldsError(self._name, field_spec)
-    if target_type and not(inspect.isclass(target_type) and
-                           issubclass(target_type, message.Message)):
+    if target_type and not (
+      inspect.isclass(target_type) and issubclass(target_type, message.Message)
+    ):
       raise errors.MetricDefinitionError(
-          'Metric target type must be a class (not an instance of a class) '
-          'and that must be a subclass of google.protobuf.message.Message.')
+        'Metric target type must be a class (not an instance of a class) '
+        'and that must be a subclass of google.protobuf.message.Message.'
+      )
 
     self._start_time = None
     self._field_spec = field_spec
@@ -157,8 +163,7 @@ class Metric(object):
 
   def __eq__(self, other):
     # pylint: disable=unidiomatic-typecheck
-    return (type(self) == type(other)
-            and self.__dict__ == other.__dict__)
+    return type(self) == type(other) and self.__dict__ == other.__dict__
 
   @property
   def field_spec(self):
@@ -188,8 +193,10 @@ class Metric(object):
 
   def populate_data_set(self, data_set):
     """Populate MetricsDataSet."""
-    data_set.metric_name = '%s%s' % (interface.state.metric_name_prefix,
-                                     self._name)
+    data_set.metric_name = '%s%s' % (
+      interface.state.metric_name_prefix,
+      self._name,
+    )
     data_set.description = self._description or ''
     if self._units is not None:
       data_set.annotations.unit = self._units
@@ -257,12 +264,14 @@ class Metric(object):
     fields = fields or {}
 
     if not isinstance(fields, dict):
-      raise ValueError('fields should be a dict, got %r (%s)' % (
-          fields, type(fields)))
+      raise ValueError(
+        'fields should be a dict, got %r (%s)' % (fields, type(fields))
+      )
 
     if sorted(fields) != self._sorted_field_names:
-      raise errors.WrongFieldsError(self.name, list(fields.keys()),
-                                    self._sorted_field_names)
+      raise errors.WrongFieldsError(
+        self.name, list(fields.keys()), self._sorted_field_names
+      )
 
     for spec in self._field_spec:
       spec.validate_value(self.name, fields[spec.name])
@@ -293,8 +302,7 @@ class Metric(object):
       return None
     typ = self.target_type
     stk = interface.state._thread_local.target_context[typ]
-    assert stk, (
-        'Target context stack for target type %r is empty' % (typ,))
+    assert stk, 'Target context stack for target type %r is empty' % (typ,)
     return stk[-1]
 
   def set(self, value, fields=None, target_fields=None):
@@ -317,8 +325,10 @@ class Metric(object):
     Instead use _incr with a modify_fn.
     """
     return interface.state.store.get(
-        self.name, self._validate_fields(fields),
-        self._get_target_context() or target_fields)
+      self.name,
+      self._validate_fields(fields),
+      self._get_target_context() or target_fields,
+    )
 
   def get_all(self):
     return interface.state.store.iter_field_values(self.name)
@@ -334,15 +344,21 @@ class Metric(object):
 
   def _set(self, fields, target_fields, value, enforce_ge=False):
     interface.state.store.set(
-        self.name, self._validate_fields(fields),
-        self._get_target_context() or target_fields,
-        value, enforce_ge=enforce_ge)
+      self.name,
+      self._validate_fields(fields),
+      self._get_target_context() or target_fields,
+      value,
+      enforce_ge=enforce_ge,
+    )
 
   def _incr(self, fields, target_fields, delta, modify_fn=None):
     interface.state.store.incr(
-        self.name, self._validate_fields(fields),
-        self._get_target_context() or target_fields,
-        delta, modify_fn=modify_fn)
+      self.name,
+      self._validate_fields(fields),
+      self._get_target_context() or target_fields,
+      delta,
+      modify_fn=modify_fn,
+    )
 
   def dangerously_enable_cumulative_set(self):
     """Enables using set() with cumulative distributions.
@@ -411,11 +427,19 @@ class NumericMetric(Metric):  # pylint: disable=abstract-method
 class CounterMetric(NumericMetric):
   """A metric whose value type is a monotonically increasing integer."""
 
-  def __init__(self, name, description, field_spec, start_time=None,
-               units=None, target_type=None):
+  def __init__(
+    self,
+    name,
+    description,
+    field_spec,
+    start_time=None,
+    units=None,
+    target_type=None,
+  ):
     self._start_time = start_time
     super(CounterMetric, self).__init__(
-        name, description, field_spec, units=units, target_type=target_type)
+      name, description, field_spec, units=units, target_type=target_type
+    )
 
   def _populate_value(self, data, value):
     data.int64_value = value
@@ -458,11 +482,19 @@ class GaugeMetric(NumericMetric):
 class CumulativeMetric(NumericMetric):
   """A metric whose value type is a monotonically increasing float."""
 
-  def __init__(self, name, description, field_spec, start_time=None,
-               units=None, target_type=None):
+  def __init__(
+    self,
+    name,
+    description,
+    field_spec,
+    start_time=None,
+    units=None,
+    target_type=None,
+  ):
     self._start_time = start_time
     super(CumulativeMetric, self).__init__(
-        name, description, field_spec, units=units, target_type=target_type)
+      name, description, field_spec, units=units, target_type=target_type
+    )
 
   def _populate_value(self, data, value):
     data.double_value = value
@@ -505,8 +537,17 @@ class _DistributionMetricBase(Metric):
   for many kinds of data, but you may want to provide a FixedWidthBucketer or
   GeometricBucketer with different parameters."""
 
-  def __init__(self, name, description, field_spec, is_cumulative=True,
-               bucketer=None, start_time=None, units=None, target_type=None):
+  def __init__(
+    self,
+    name,
+    description,
+    field_spec,
+    is_cumulative=True,
+    bucketer=None,
+    start_time=None,
+    units=None,
+    target_type=None,
+  ):
     self._start_time = start_time
 
     if bucketer is None:
@@ -515,7 +556,8 @@ class _DistributionMetricBase(Metric):
     self._is_cumulative = is_cumulative
     self.bucketer = bucketer
     super(_DistributionMetricBase, self).__init__(
-        name, description, field_spec, units=units, target_type=target_type)
+      name, description, field_spec, units=units, target_type=target_type
+    )
 
   def _populate_value(self, metric, value):
     pb = metric.distribution_value
@@ -525,7 +567,8 @@ class _DistributionMetricBase(Metric):
       pb.exponential_buckets.growth_factor = value.bucketer.growth_factor
       pb.exponential_buckets.scale = value.bucketer.scale
       pb.exponential_buckets.num_finite_buckets = (
-          value.bucketer.num_finite_buckets)
+        value.bucketer.num_finite_buckets
+      )
     else:
       pb.linear_buckets.width = value.bucketer.width
       pb.linear_buckets.offset = 0.0
@@ -534,7 +577,8 @@ class _DistributionMetricBase(Metric):
     # Copy the distribution bucket values.  Include the overflow buckets on
     # either end.
     pb.bucket_count.extend(
-        value.buckets.get(i, 0) for i in range(0, value.bucketer.total_buckets))
+      value.buckets.get(i, 0) for i in range(0, value.bucketer.total_buckets)
+    )
 
     pb.count = value.count
     pb.mean = float(value.sum) / max(value.count, 1)
@@ -561,7 +605,8 @@ class _DistributionMetricBase(Metric):
     """
     if self._is_cumulative and not self._enable_cumulative_set:
       raise TypeError(
-          'Cannot set() a cumulative DistributionMetric (use add() instead)')
+        'Cannot set() a cumulative DistributionMetric (use add() instead)'
+      )
 
     if not isinstance(value, distribution.Distribution):
       raise errors.MonitoringInvalidValueTypeError(self._name, value)
@@ -575,27 +620,47 @@ class _DistributionMetricBase(Metric):
 class CumulativeDistributionMetric(_DistributionMetricBase):
   """A DistributionMetric with is_cumulative set to True."""
 
-  def __init__(self, name, description, field_spec, bucketer=None, units=None,
-               target_type=None):
+  def __init__(
+    self,
+    name,
+    description,
+    field_spec,
+    bucketer=None,
+    units=None,
+    target_type=None,
+  ):
     super(CumulativeDistributionMetric, self).__init__(
-        name, description, field_spec,
-        is_cumulative=True,
-        bucketer=bucketer,
-        units=units,
-        target_type=target_type)
+      name,
+      description,
+      field_spec,
+      is_cumulative=True,
+      bucketer=bucketer,
+      units=units,
+      target_type=target_type,
+    )
 
 
 class NonCumulativeDistributionMetric(_DistributionMetricBase):
   """A DistributionMetric with is_cumulative set to False."""
 
-  def __init__(self, name, description, field_spec, bucketer=None, units=None,
-               target_type=None):
+  def __init__(
+    self,
+    name,
+    description,
+    field_spec,
+    bucketer=None,
+    units=None,
+    target_type=None,
+  ):
     super(NonCumulativeDistributionMetric, self).__init__(
-        name, description, field_spec,
-        is_cumulative=False,
-        bucketer=bucketer,
-        units=units,
-        target_type=target_type)
+      name,
+      description,
+      field_spec,
+      is_cumulative=False,
+      bucketer=bucketer,
+      units=units,
+      target_type=target_type,
+    )
 
 
 class MetricsDataUnits(object):

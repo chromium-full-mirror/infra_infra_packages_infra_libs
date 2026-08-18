@@ -22,7 +22,6 @@ import infra_libs
 
 
 class MonitorTest(unittest.TestCase):
-
   def test_send(self):
     m = monitors.Monitor()
     metric1 = metrics_pb2.MetricsPayload()
@@ -33,7 +32,6 @@ class MonitorTest(unittest.TestCase):
 
 
 class HttpsMonitorTest(unittest.TestCase):
-
   def setUp(self):
     interface.state.reset_for_unittest()
 
@@ -41,8 +39,9 @@ class HttpsMonitorTest(unittest.TestCase):
     return json.dumps({'payload': pb_to_popo.convert(pb)})
 
   def _test_send(self, http):
-    mon = monitors.HttpsMonitor('endpoint',
-        monitors.CredentialFactory.from_string(':gce'), http=http)
+    mon = monitors.HttpsMonitor(
+      'endpoint', monitors.CredentialFactory.from_string(':gce'), http=http
+    )
     resp = mock.MagicMock(spec=httplib2.Response, status=200)
     mon._http.request = mock.MagicMock(return_value=[resp, ""])
 
@@ -50,10 +49,16 @@ class HttpsMonitorTest(unittest.TestCase):
     payload.metrics_collection.add().metrics_data_set.add().metric_name = 'a'
     mon.send(payload)
 
-    mon._http.request.assert_has_calls([
-      mock.call('endpoint', method='POST', body=self.message(payload),
-                headers={'Content-Type': 'application/json'}),
-    ])
+    mon._http.request.assert_has_calls(
+      [
+        mock.call(
+          'endpoint',
+          method='POST',
+          body=self.message(payload),
+          headers={'Content-Type': 'application/json'},
+        ),
+      ]
+    )
     self.assertFalse(mon.failed())
 
   def test_default_send(self):
@@ -65,11 +70,12 @@ class HttpsMonitorTest(unittest.TestCase):
   def test_instrumented_http_send(self):
     self._test_send(httplib2_utils.InstrumentedHttp('test'))
 
-  @mock.patch('infra_libs.ts_mon.common.monitors.CredentialFactory.'
-              'from_string')
+  @mock.patch('infra_libs.ts_mon.common.monitors.CredentialFactory.from_string')
   def test_send_resp_failure(self, _load_creds):
-    mon = monitors.HttpsMonitor('endpoint',
-        monitors.CredentialFactory.from_string('/path/to/creds.p8.json'))
+    mon = monitors.HttpsMonitor(
+      'endpoint',
+      monitors.CredentialFactory.from_string('/path/to/creds.p8.json'),
+    )
     resp = mock.MagicMock(spec=httplib2.Response, status=400)
     mon._http.request = mock.MagicMock(return_value=[resp, ""])
 
@@ -78,17 +84,19 @@ class HttpsMonitorTest(unittest.TestCase):
     mon.send(metric1)
 
     mon._http.request.assert_called_once_with(
-        'endpoint',
-        method='POST',
-        body=self.message(metric1),
-        headers={'Content-Type': 'application/json'})
+      'endpoint',
+      method='POST',
+      body=self.message(metric1),
+      headers={'Content-Type': 'application/json'},
+    )
     self.assertTrue(mon.failed())
 
-  @mock.patch('infra_libs.ts_mon.common.monitors.CredentialFactory.'
-              'from_string')
+  @mock.patch('infra_libs.ts_mon.common.monitors.CredentialFactory.from_string')
   def test_send_http_failure(self, _load_creds):
-    mon = monitors.HttpsMonitor('endpoint',
-        monitors.CredentialFactory.from_string('/path/to/creds.p8.json'))
+    mon = monitors.HttpsMonitor(
+      'endpoint',
+      monitors.CredentialFactory.from_string('/path/to/creds.p8.json'),
+    )
     mon._http.request = mock.MagicMock(side_effect=ValueError())
 
     metric1 = metrics_pb2.MetricsPayload()
@@ -96,15 +104,15 @@ class HttpsMonitorTest(unittest.TestCase):
     mon.send(metric1)
 
     mon._http.request.assert_called_once_with(
-        'endpoint',
-        method='POST',
-        body=self.message(metric1),
-        headers={'Content-Type': 'application/json'})
+      'endpoint',
+      method='POST',
+      body=self.message(metric1),
+      headers={'Content-Type': 'application/json'},
+    )
     self.assertTrue(mon.failed())
 
 
 class DebugMonitorTest(unittest.TestCase):
-
   def test_send_file(self):
     with infra_libs.temporary_directory() as temp_dir:
       filename = os.path.join(temp_dir, 'out')
@@ -130,7 +138,6 @@ class DebugMonitorTest(unittest.TestCase):
 
 
 class NullMonitorTest(unittest.TestCase):
-
   def test_send(self):
     m = monitors.NullMonitor()
     payload = metrics_pb2.MetricsPayload()
@@ -140,17 +147,21 @@ class NullMonitorTest(unittest.TestCase):
 
 
 class CredentialFactoryTest(unittest.TestCase):
-
   def test_from_string(self):
-    self.assertIsInstance(monitors.CredentialFactory.from_string(':gce'),
-        monitors.GCECredentials)
-    self.assertIsInstance(monitors.CredentialFactory.from_string(':appengine'),
-        monitors.AppengineCredentials)
-    self.assertIsInstance(monitors.CredentialFactory.from_string('/foo'),
-        monitors.FileCredentials)
+    self.assertIsInstance(
+      monitors.CredentialFactory.from_string(':gce'), monitors.GCECredentials
+    )
+    self.assertIsInstance(
+      monitors.CredentialFactory.from_string(':appengine'),
+      monitors.AppengineCredentials,
+    )
+    self.assertIsInstance(
+      monitors.CredentialFactory.from_string('/foo'), monitors.FileCredentials
+    )
 
-  @mock.patch('infra_libs.httplib2_utils.DelegateServiceAccountCredentials',
-              autospec=True)
+  @mock.patch(
+    'infra_libs.httplib2_utils.DelegateServiceAccountCredentials', autospec=True
+  )
   def test_actor_credentials(self, mock_creds):
     base = mock.Mock(monitors.CredentialFactory)
     c = monitors.DelegateServiceAccountCredentials('test@example.com', base)
@@ -159,8 +170,10 @@ class CredentialFactoryTest(unittest.TestCase):
     base.create.assert_called_once_with(['https://www.googleapis.com/auth/iam'])
     base.create.return_value.authorize.assert_called_once_with(mock.ANY)
     mock_creds.assert_called_once_with(
-        base.create.return_value.authorize.return_value,
-        'test@example.com', ['foo'])
+      base.create.return_value.authorize.return_value,
+      'test@example.com',
+      ['foo'],
+    )
     self.assertEqual(mock_creds.return_value, creds)
 
   @mock.patch('oauth2client.client.GoogleCredentials.from_stream')

@@ -53,27 +53,31 @@ def get_access_token(scopes=DEFAULT_SCOPES, environ=None, http=None):
     raise LUCIAuthError('LUCI auth is not available')
 
   logging.debug(
-      'luci_auth: requesting an access token for account "%s"',
-      params.default_account_id)
+    'luci_auth: requesting an access token for account "%s"',
+    params.default_account_id,
+  )
 
   http = http or httplib2.Http()
   host = '127.0.0.1:%d' % params.rpc_port
   resp, content = http.request(
-      uri='http://%s/rpc/LuciLocalAuthService.GetOAuthToken' % host,
-      method='POST',
-      body=json.dumps(
-          {
-              'account_id': params.default_account_id,
-              'scopes': scopes,
-              'secret': params.secret,
-          },
-          # Sort the keys to simplify mocking.
-          sort_keys=True),
-      headers={'Content-Type': 'application/json'})
+    uri='http://%s/rpc/LuciLocalAuthService.GetOAuthToken' % host,
+    method='POST',
+    body=json.dumps(
+      {
+        'account_id': params.default_account_id,
+        'scopes': scopes,
+        'secret': params.secret,
+      },
+      # Sort the keys to simplify mocking.
+      sort_keys=True,
+    ),
+    headers={'Content-Type': 'application/json'},
+  )
   if resp.status != 200:
     raise LUCIAuthError(
-        'Failed to grab access token from local auth server %s, status %d: %r' %
-        (host, resp.status, content))
+      'Failed to grab access token from local auth server %s, status %d: %r'
+      % (host, resp.status, content)
+    )
 
   try:
     token = json.loads(content)
@@ -87,20 +91,22 @@ def get_access_token(scopes=DEFAULT_SCOPES, environ=None, http=None):
 
   if error_code:
     raise LUCIAuthError(
-        'Error #%d when retrieving access token: %s' %
-        (error_code, error_message))
+      'Error #%d when retrieving access token: %s' % (error_code, error_message)
+    )
 
   if expiry is None:
     logging.debug(
-        'luci_auth: got an access token for account "%s" that does not expire',
-        params.default_account_id)
+      'luci_auth: got an access token for account "%s" that does not expire',
+      params.default_account_id,
+    )
     return access_token, None
 
   exp = datetime.datetime.utcfromtimestamp(expiry)
   logging.debug(
-      'luci_auth: got an access token for account "%s" that expires in %d sec',
-      params.default_account_id,
-      (exp - datetime.datetime.utcnow()).total_seconds())
+    'luci_auth: got an access token for account "%s" that expires in %d sec',
+    params.default_account_id,
+    (exp - datetime.datetime.utcnow()).total_seconds(),
+  )
   return str(access_token), exp
 
 
@@ -118,7 +124,8 @@ class LUCICredentials(oauth2client.client.OAuth2Credentials):
     if not available(environ=environ):
       raise LUCIAuthError('LUCI auth is not available')
     super(LUCICredentials, self).__init__(
-        None, None, None, None, None, None, None)
+      None, None, None, None, None, None, None
+    )
     _check_scopes(scopes)
     self._scopes = tuple(scopes)
     self._environ = environ
@@ -128,9 +135,8 @@ class LUCICredentials(oauth2client.client.OAuth2Credentials):
     # pylint: disable=attribute-defined-outside-init
     # All fields here are 'inherited' from OAuth2Credentials.
     self.access_token, self.token_expiry = get_access_token(
-        self._scopes,
-        environ=self._environ,
-        http=self._http)
+      self._scopes, environ=self._environ, http=self._http
+    )
     self.invalid = False
 
 
@@ -139,11 +145,13 @@ class LUCICredentials(oauth2client.client.OAuth2Credentials):
 
 # Represents LUCI_CONTEXT['local_auth'] dict.
 _LocalAuthParams = collections.namedtuple(
-  '_LocalAuthParams', [
+  '_LocalAuthParams',
+  [
     'default_account_id',
     'secret',
     'rpc_port',
-])
+  ],
+)
 
 
 def _local_auth_params(environ):
@@ -153,9 +161,10 @@ def _local_auth_params(environ):
     return None
   try:
     return _LocalAuthParams(
-        default_account_id=p.get('default_account_id'),
-        secret=p.get('secret'),
-        rpc_port=int(p.get('rpc_port')))
+      default_account_id=p.get('default_account_id'),
+      secret=p.get('secret'),
+      rpc_port=int(p.get('rpc_port')),
+    )
   except ValueError as e:
     raise LUCIAuthError('local_auth section is malformed: %s' % e)
 

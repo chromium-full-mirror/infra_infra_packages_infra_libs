@@ -110,6 +110,7 @@ class State(object):
     self.last_flushed = datetime.datetime.utcfromtimestamp(0)
     self.store.reset_for_unittest()
 
+
 state = State()
 
 
@@ -117,7 +118,8 @@ state = State()
 def target_context(target_fields):
   """Sets and unsets a target context."""
   assert isinstance(target_fields, message.Message), (
-      'Cannot set non-protobuf target context %r' % (target_fields,))
+    'Cannot set non-protobuf target context %r' % (target_fields,)
+  )
   typ = type(target_fields)
   stk = state._thread_local.target_context[typ]
   try:
@@ -179,8 +181,13 @@ def _generate_proto():
   data_sets = {}
 
   count = 0
-  for (target, metric, start_times, end_time, fields_values
-       ) in state.store.get_all():
+  for (
+    target,
+    metric,
+    start_times,
+    end_time,
+    fields_values,
+  ) in state.store.get_all():
     for fields, value in six.iteritems(fields_values):
       # In default, the start time of all data points for a single stream
       # should be set with the first time of a value change in the stream,
@@ -227,7 +234,8 @@ def _generate_proto():
           target.populate_target_pb(collections[target])
 
         collections[target].root_labels.add(
-          key='proxy_zone', string_value=state.default_proxy_zone)
+          key='proxy_zone', string_value=state.default_proxy_zone
+        )
 
       collection = collections[target]
 

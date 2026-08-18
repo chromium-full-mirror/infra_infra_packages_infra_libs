@@ -4,7 +4,6 @@
 
 """Miscellaneous utility functions."""
 
-
 from __future__ import print_function
 
 import contextlib
@@ -19,6 +18,7 @@ from six import text_type, PY2
 
 # UTC datetime corresponding to zero Unix timestamp.
 EPOCH = datetime.datetime.utcfromtimestamp(0)
+
 
 def parse_rfc3339_epoch(value):
   """Parses RFC 3339 datetime string as epoch
@@ -54,28 +54,30 @@ def parse_rfc3339_epoch(value):
     nano_value = ''
   else:
     second_value = time_value[:point_position]
-    nano_value = time_value[point_position + 1:]
+    nano_value = time_value[point_position + 1 :]
   date_object = datetime.datetime.strptime(second_value, '%Y-%m-%dT%H:%M:%S')
   td = date_object - EPOCH
   seconds = td.seconds + td.days * 86400
   if len(nano_value) > 9:
     raise ValueError(
-        'Failed to parse timestamp: nanos %r more than 9 fractional digits'
-        % nano_value)
+      'Failed to parse timestamp: nanos %r more than 9 fractional digits'
+      % nano_value
+    )
   # Parse timezone offsets.
   if value[timezone_offset] == 'Z':
     if len(value) != timezone_offset + 1:
-      raise ValueError('Failed to parse timestamp: invalid trailing data %r'
-                       % value)
+      raise ValueError(
+        'Failed to parse timestamp: invalid trailing data %r' % value
+      )
   else:
     timezone = value[timezone_offset:]
     pos = timezone.find(':')
     if pos == -1:
       raise ValueError('Invalid timezone offset value: %r' % timezone)
     if timezone[0] == '+':
-      seconds -= (int(timezone[1:pos])*60+int(timezone[pos+1:]))*60
+      seconds -= (int(timezone[1:pos]) * 60 + int(timezone[pos + 1 :])) * 60
     else:
-      seconds += (int(timezone[1:pos])*60+int(timezone[pos+1:]))*60
+      seconds += (int(timezone[1:pos]) * 60 + int(timezone[pos + 1 :])) * 60
   return seconds
 
 
@@ -96,8 +98,9 @@ def read_json_as_utf8(filename=None, text=None):
   """
 
   if filename is not None and text is not None:
-    raise ValueError('Only one of "filename" and "text" can be provided at '
-                     'the same time')
+    raise ValueError(
+      'Only one of "filename" and "text" can be provided at the same time'
+    )
 
   if filename is None and text is None:
     raise ValueError('One of "filename" and "text" must be provided')
@@ -124,8 +127,9 @@ def read_json_as_utf8(filename=None, text=None):
 # context manager here. And they used 'dir' as a keyword argument.
 # pylint: disable=redefined-builtin
 @contextlib.contextmanager
-def temporary_directory(suffix="", prefix="tmp", dir=None,
-                        keep_directory=False):
+def temporary_directory(
+  suffix="", prefix="tmp", dir=None, keep_directory=False
+):
   """Create and return a temporary directory.  This has the same
   behavior as mkdtemp but can be used as a context manager.  For
   example:
@@ -155,5 +159,7 @@ def temporary_directory(suffix="", prefix="tmp", dir=None,
         # TODO(pgervais,496347) Make this work reliably on Windows.
         shutil.rmtree(tempdir, ignore_errors=True)
       except OSError as ex:  # pragma: no cover
-        print(("ERROR: {!r} while cleaning up {!r}".format(ex, tempdir)),
-              file=sys.stderr)
+        print(
+          ("ERROR: {!r} while cleaning up {!r}".format(ex, tempdir)),
+          file=sys.stderr,
+        )

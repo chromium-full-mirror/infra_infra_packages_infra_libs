@@ -21,7 +21,6 @@ from infra_libs.ts_mon.common.test import my_target_pb2
 
 
 class DefaultModifyFnTest(unittest.TestCase):
-
   def test_adds(self):
     fn = metric_store.default_modify_fn('foo')
     self.assertEquals(5, fn(2, 3))
@@ -54,10 +53,12 @@ class MetricStoreTestBase(object):
     self.mock_time.return_value = 1234
 
     target = targets.TaskTarget(
-        'test_service', 'test_job', 'test_region', 'test_host')
+      'test_service', 'test_job', 'test_region', 'test_host'
+    )
     self.state = interface.State(store_ctor=self.create_store, target=target)
-    mock.patch('infra_libs.ts_mon.common.interface.state',
-        new=self.state).start()
+    mock.patch(
+      'infra_libs.ts_mon.common.interface.state', new=self.state
+    ).start()
 
     self.store = self.state.store
 
@@ -172,26 +173,32 @@ class MetricStoreTestBase(object):
     self.store.set('foo', fields2, target_fields1, 44)
 
     field_values = list(self.store.iter_field_values('foo'))
-    self.assertEquals([
+    self.assertEquals(
+      [
         (('value',), 42),
         (('value2',), 43),
         (('value2',), 44),
-    ], sorted(field_values))
+      ],
+      sorted(field_values),
+    )
 
   def test_get_all(self):
     typ = my_target_pb2.MyTarget
     self.store.set('foo', ('bar',), typ(s='x'), 123)
     self.store.set('foo', ('bar',), typ(s='y'), 456)
     self.store.set('foo', ('qux',), typ(s='y'), 789)
-    self.assertDictEqual({
+    self.assertDictEqual(
+      {
         (my_target_pb2.MyTarget, False, 0, 'x'): {
-            ('bar',): 123,
+          ('bar',): 123,
         },
         (my_target_pb2.MyTarget, False, 0, 'y'): {
-            ('bar',): 456,
-            ('qux',): 789,
+          ('bar',): 456,
+          ('qux',): 789,
         },
-    }, {t[0]: t[4] for t in self.store.get_all()})
+      },
+      {t[0]: t[4] for t in self.store.get_all()},
+    )
 
   def test_set(self):
     typ = my_target_pb2.MyTarget
@@ -219,8 +226,9 @@ class MetricStoreTestBase(object):
       self.store.incr('foo', ('value',), None, -1)
 
   def test_incr_modify_fn(self):
-    def spec_fn(n, i): # pragma: no cover
-      return n+i
+    def spec_fn(n, i):  # pragma: no cover
+      return n + i
+
     modify_fn = mock.create_autospec(spec_fn, spec_set=True)
     modify_fn.return_value = 7
 
@@ -286,6 +294,7 @@ class MetricStoreTestBase(object):
         self.store.set('foo', (('field', random.random()),), None, 1)
 
     successful_workers = []
+
     def get_all_worker():
       start.wait()
       while not stop.is_set():
@@ -294,8 +303,9 @@ class MetricStoreTestBase(object):
       successful_workers.append(True)
 
     # Create 10 modify threads and 10 get_all threads.
-    threads = ([threading.Thread(target=modify_worker) for _ in range(10)] +
-               [threading.Thread(target=get_all_worker) for _ in range(10)])
+    threads = [threading.Thread(target=modify_worker) for _ in range(10)] + [
+      threading.Thread(target=get_all_worker) for _ in range(10)
+    ]
 
     # Start all the threads at once.
     for thread in threads:

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 """Classes representing the monitoring interface for tasks or devices."""
+
 import six
 
 
@@ -42,10 +43,13 @@ class Target(object):
 
   def __eq__(self, other):
     # pylint: disable=unidiomatic-typecheck
-    return (type(self) == type(other) and
-            self._fields == other._fields and
-            all(getattr(self, name) == getattr(other, name)
-                for name in self._fields))
+    return (
+      type(self) == type(other)
+      and self._fields == other._fields
+      and all(
+        getattr(self, name) == getattr(other, name) for name in self._fields
+      )
+    )
 
   def __hash__(self):
     return hash(tuple(getattr(self, name) for name in self._fields))
@@ -107,8 +111,13 @@ class TaskTarget(Target):
     self.region = region
     self.hostname = hostname
     self.task_num = task_num
-    self._fields = ('service_name', 'job_name', 'region',
-                    'hostname', 'task_num')
+    self._fields = (
+      'service_name',
+      'job_name',
+      'region',
+      'hostname',
+      'task_num',
+    )
 
   def populate_target_pb(self, collection):
     """Populate the 'task' target into metrics_pb2.MetricsCollection.

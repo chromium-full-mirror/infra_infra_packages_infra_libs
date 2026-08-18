@@ -44,15 +44,18 @@ import pytz
 from infra_libs.ts_mon.common import metrics
 
 log_metric = metrics.CumulativeMetric(
-    'proc/log_lines',
-    'Number of log lines, per severity level.',
-    [metrics.StringField('level')])
+  'proc/log_lines',
+  'Number of log lines, per severity level.',
+  [metrics.StringField('level')],
+)
 
 if sys.platform.startswith('win'):  # pragma: no cover
-  DEFAULT_LOG_DIRECTORIES = os.pathsep.join([
+  DEFAULT_LOG_DIRECTORIES = os.pathsep.join(
+    [
       'E:\\chrome-infra-logs',
       'C:\\chrome-infra-logs',
-  ])
+    ]
+  )
 else:
   DEFAULT_LOG_DIRECTORIES = '/var/log/chrome-infra'
 
@@ -71,6 +74,7 @@ class InfraFilter(logging.Filter):  # pragma: no cover
     module_name_blacklist (str): do not print log lines from modules whose name
       matches this regular expression.
   """
+
   def __init__(self, timezone, module_name_blacklist=None):
     super(InfraFilter, self).__init__()
     self.module_name_blacklist = None
@@ -117,21 +121,25 @@ class InfraFormatter(logging.Formatter):  # pragma: no cover
 
   def __init__(self, max_length=None):
     super(InfraFormatter, self).__init__(
-        '[%(severity)s%(iso8601)s %(process)d %(thread)d '
-        '%(fullModuleName)s:%(lineno)s] %(message)s')
+      '[%(severity)s%(iso8601)s %(process)d %(thread)d '
+      '%(fullModuleName)s:%(lineno)s] %(message)s'
+    )
     self._max_length = max_length
 
   def format(self, record):
     return _truncate_if_long(
-        super(InfraFormatter, self).format(record), self._max_length)
+      super(InfraFormatter, self).format(record), self._max_length
+    )
 
 
-def add_handler(logger,
-                handler=None,
-                timezone='UTC',
-                level=logging.WARNING,
-                module_name_blacklist=None,
-                max_length=None):  # pragma: no cover
+def add_handler(
+  logger,
+  handler=None,
+  timezone='UTC',
+  level=logging.WARNING,
+  module_name_blacklist=None,
+  max_length=None,
+):  # pragma: no cover
   """Configures and adds a handler to a logger the standard way for infra.
 
   Args:
@@ -161,8 +169,9 @@ def add_handler(logger,
 
   """
   handler = handler or logging.StreamHandler()
-  handler.addFilter(InfraFilter(timezone,
-                                module_name_blacklist=module_name_blacklist))
+  handler.addFilter(
+    InfraFilter(timezone, module_name_blacklist=module_name_blacklist)
+  )
   handler.setFormatter(InfraFormatter(max_length))
   handler.setLevel(level=level)
   logger.addHandler(handler)
@@ -183,8 +192,9 @@ def default_program_name():
   return ret
 
 
-def add_argparse_options(parser,
-                         default_level=logging.WARNING):  # pragma: no cover
+def add_argparse_options(
+  parser, default_level=logging.WARNING
+):  # pragma: no cover
   """Adds logging related options to an argparse.ArgumentParser.
 
   See also: :func:`process_argparse_options`
@@ -193,51 +203,79 @@ def add_argparse_options(parser,
   parser = parser.add_argument_group('Logging Options')
   g = parser.add_mutually_exclusive_group()
   g.set_defaults(log_level=default_level)
-  g.add_argument('--logs-quiet', '--quiet',
-                 action='store_const', const=logging.ERROR,
-                 dest='log_level', help='Make the output quieter (ERROR).')
-  g.add_argument('--logs-warning', '--warning',
-                 action='store_const', const=logging.WARNING,
-                 dest='log_level',
-                 help='Set the output to an average verbosity (WARNING).')
-  g.add_argument('--logs-verbose', '--verbose',
-                 action='store_const', const=logging.INFO,
-                 dest='log_level', help='Make the output louder (INFO).')
-  g.add_argument('--logs-debug', '--debug',
-                 action='store_const', const=logging.DEBUG,
-                 dest='log_level', help='Make the output really loud (DEBUG).')
-  parser.add_argument('--logs-black-list', metavar='REGEX',
-                      help='hide log lines emitted by modules whose name '
-                           'matches\nthis regular expression.')
+  g.add_argument(
+    '--logs-quiet',
+    '--quiet',
+    action='store_const',
+    const=logging.ERROR,
+    dest='log_level',
+    help='Make the output quieter (ERROR).',
+  )
+  g.add_argument(
+    '--logs-warning',
+    '--warning',
+    action='store_const',
+    const=logging.WARNING,
+    dest='log_level',
+    help='Set the output to an average verbosity (WARNING).',
+  )
+  g.add_argument(
+    '--logs-verbose',
+    '--verbose',
+    action='store_const',
+    const=logging.INFO,
+    dest='log_level',
+    help='Make the output louder (INFO).',
+  )
+  g.add_argument(
+    '--logs-debug',
+    '--debug',
+    action='store_const',
+    const=logging.DEBUG,
+    dest='log_level',
+    help='Make the output really loud (DEBUG).',
+  )
   parser.add_argument(
-      '--logs-directory',
-      default=DEFAULT_LOG_DIRECTORIES,
-      help=textwrap.fill(
-          'directory into which to write logs (default: %%(default)s). If '
-          'this directory does not exist or is not writable, the temporary '
-          'directory (%s) will be used instead. If this is explicitly set '
-          'to the empty string, logs will not be written at all. May be set '
-          'to multiple directories separated by the "%s" character, in '
-          'which case the first one that exists and is writable is used.' % (
-                tempfile.gettempdir(), os.pathsep), width=56))
+    '--logs-black-list',
+    metavar='REGEX',
+    help='hide log lines emitted by modules whose name '
+    'matches\nthis regular expression.',
+  )
   parser.add_argument(
-      '--logs-program-name',
-      default=default_program_name(),
-      help='the program name used to name the log files created in '
-           '--logs-directory (default: %(default)s).')
+    '--logs-directory',
+    default=DEFAULT_LOG_DIRECTORIES,
+    help=textwrap.fill(
+      'directory into which to write logs (default: %%(default)s). If '
+      'this directory does not exist or is not writable, the temporary '
+      'directory (%s) will be used instead. If this is explicitly set '
+      'to the empty string, logs will not be written at all. May be set '
+      'to multiple directories separated by the "%s" character, in '
+      'which case the first one that exists and is writable is used.'
+      % (tempfile.gettempdir(), os.pathsep),
+      width=56,
+    ),
+  )
   parser.add_argument(
-      '--logs-debug-file',
-      action='store_true',
-      help='by default only INFO, WARNING and ERROR log files are written to '
-           'disk.  This flag causes a DEBUG log to be written as well.')
+    '--logs-program-name',
+    default=default_program_name(),
+    help='the program name used to name the log files created in '
+    '--logs-directory (default: %(default)s).',
+  )
   parser.add_argument(
-      '--logs-max-length',
-      default=None,
-      type=int,
-      help='truncate formatted log entries to this many bytes from their end. '
-      'Defaults to no truncation. Useful for streaming logs into Cloud '
-      'Logging, see its limits https://cloud.google.com/logging/quotas. '
-      'Truncating to less than 256 bytes is not recommended.')
+    '--logs-debug-file',
+    action='store_true',
+    help='by default only INFO, WARNING and ERROR log files are written to '
+    'disk.  This flag causes a DEBUG log to be written as well.',
+  )
+  parser.add_argument(
+    '--logs-max-length',
+    default=None,
+    type=int,
+    help='truncate formatted log entries to this many bytes from their end. '
+    'Defaults to no truncation. Useful for streaming logs into Cloud '
+    'Logging, see its limits https://cloud.google.com/logging/quotas. '
+    'Truncating to less than 256 bytes is not recommended.',
+  )
 
 
 def process_argparse_options(options, logger=None):  # pragma: no cover
@@ -266,10 +304,11 @@ def process_argparse_options(options, logger=None):  # pragma: no cover
     logger = logging.root
 
   add_handler(
-      logger,
-      level=options.log_level,
-      module_name_blacklist=options.logs_black_list,
-      max_length=options.logs_max_length)
+    logger,
+    level=options.log_level,
+    module_name_blacklist=options.logs_black_list,
+    max_length=options.logs_max_length,
+  )
 
   if options.logs_directory:
     _add_file_handlers(options, logger)
@@ -297,11 +336,12 @@ def _add_file_handlers(options, logger):  # pragma: no cover
   # Log files are named with this pattern:
   # <program>.<hostname>.<username>.log.<level>.YYYYMMDD-HHMMSS.<pid>
   pattern = "%s.%s.%s.log.%%s.%s.%d" % (
-      options.logs_program_name,
-      socket.getfqdn().split('.')[0],
-      getpass.getuser(),
-      datetime.datetime.utcnow().strftime('%Y%m%d-%H%M%S'),
-      os.getpid())
+    options.logs_program_name,
+    socket.getfqdn().split('.')[0],
+    getpass.getuser(),
+    datetime.datetime.utcnow().strftime('%Y%m%d-%H%M%S'),
+    os.getpid(),
+  )
 
   file_levels = [logging.INFO, logging.WARNING, logging.ERROR]
   if options.logs_debug_file:
@@ -309,14 +349,17 @@ def _add_file_handlers(options, logger):  # pragma: no cover
 
   for level in file_levels:
     add_handler(
-        logger,
-        handler=logging.handlers.RotatingFileHandler(
-            filename=os.path.join(
-                logs_directory, pattern % logging.getLevelName(level)),
-            maxBytes=10 * 1024 * 1024,
-            backupCount=10,
-            delay=True),
-        level=level)
+      logger,
+      handler=logging.handlers.RotatingFileHandler(
+        filename=os.path.join(
+          logs_directory, pattern % logging.getLevelName(level)
+        ),
+        maxBytes=10 * 1024 * 1024,
+        backupCount=10,
+        delay=True,
+      ),
+      level=level,
+    )
 
 
 def _truncate_if_long(l, max_length):
@@ -325,4 +368,4 @@ def _truncate_if_long(l, max_length):
   if max_length < 100:
     return l[:max_length]
   suffix = '... [TRUNCATED TOO LONG LOG ENTRY: %d B]' % len(l)
-  return l[:max_length - len(suffix)] + suffix
+  return l[: max_length - len(suffix)] + suffix

@@ -17,10 +17,7 @@ class TestFreeze(unittest.TestCase):
     f = infra_types.freeze(d)
     self.assertEqual(d, f)
     self.assertIsInstance(f, infra_types.FrozenDict)
-    self.assertEqual(
-        hash(f),
-        hash((0, ('cat', 100))) ^ hash((1, ('dog', 0)))
-    )
+    self.assertEqual(hash(f), hash((0, ('cat', 100))) ^ hash((1, ('dog', 0))))
     self.assertEqual(len(d), len(f))
 
     # Cover equality
@@ -45,8 +42,8 @@ class TestFreeze(unittest.TestCase):
 class TestThaw(unittest.TestCase):
   def testDict(self):
     d = {
-        'cat': 100,
-        'dog': 0,
+      'cat': 100,
+      'dog': 0,
     }
     f = infra_types.freeze(d)
     t = infra_types.thaw(f)

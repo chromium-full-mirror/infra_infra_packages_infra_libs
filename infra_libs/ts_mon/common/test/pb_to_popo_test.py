@@ -8,8 +8,8 @@ from infra_libs.ts_mon.common import monitors
 from infra_libs.ts_mon.common import pb_to_popo
 from infra_libs.ts_mon.protos import metrics_pb2
 
-class PbToPopoTest(unittest.TestCase):
 
+class PbToPopoTest(unittest.TestCase):
   def test_convert(self):
     data_set = metrics_pb2.MetricsDataSet()
     data_set.metric_name = 'foo'
@@ -24,21 +24,12 @@ class PbToPopoTest(unittest.TestCase):
 
     popo = pb_to_popo.convert(data_set)
     expected = {
-        'metric_name':
-            'foo',
-        'data': [
-            {
-                'bool_value': True
-            },
-            {
-                'bool_value': False
-            },
-            {
-                'int64_value': 200
-            },
-            {
-                'double_value': 123.456
-            },
-        ],
+      'metric_name': 'foo',
+      'data': [
+        {'bool_value': True},
+        {'bool_value': False},
+        {'int64_value': 200},
+        {'double_value': 123.456},
+      ],
     }
     self.assertDictEqual(expected, popo)

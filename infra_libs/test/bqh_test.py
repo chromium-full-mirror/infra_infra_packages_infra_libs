@@ -25,7 +25,8 @@ class TestBigQueryHelper(unittest.TestCase):
     self.dataset_id = 'test_dataset'
     self.table_id = 'test_table'
     self.table = self.bq_client.get_table(
-        self.bq_client.dataset(self.dataset_id).table(self.table_id))
+      self.bq_client.dataset(self.dataset_id).table(self.table_id)
+    )
     self.mock_create_rows = self.bq_client.create_rows
     self.mock_create_rows.return_value = None
 
@@ -47,8 +48,9 @@ class TestBigQueryHelper(unittest.TestCase):
     self.mock_create_rows.assert_any_call(self.table, [('a',)])
     self.mock_create_rows.assert_any_call(self.table, [('b',)])
     self.mock_create_rows.assert_any_call(self.table, [('c',)])
-    bqh.send_rows(self.bq_client, self.dataset_id, self.table_id, rows,
-                  bqh._BATCH_LIMIT+1)
+    bqh.send_rows(
+      self.bq_client, self.dataset_id, self.table_id, rows, bqh._BATCH_LIMIT + 1
+    )
     self.mock_create_rows.assert_any_call(self.table, rows)
 
   def test_send_rows_unsupported_type(self):
@@ -58,16 +60,16 @@ class TestBigQueryHelper(unittest.TestCase):
   def test_send_rows_message(self):
     rows = [testmessage_pb2.TestMessage(str='a')]
     bqh.send_rows(self.bq_client, self.dataset_id, self.table_id, rows)
-    expected_rows_arg = [{'num': 0, 'e': 'E0', 'str': u'a'}]
+    expected_rows_arg = [{'num': 0, 'e': 'E0', 'str': 'a'}]
     self.mock_create_rows.assert_any_call(self.table, expected_rows_arg)
 
   def test_send_rows_with_errors(self):
     rows = [('a',), ('b',), ('c',)]
     self.mock_create_rows.return_value = [
-        {
-            'index': 0,
-            'errors': ['some err'],
-        },
+      {
+        'index': 0,
+        'errors': ['some err'],
+      },
     ]
     with self.assertRaises(bqh.BigQueryInsertError):
       bqh.send_rows(self.bq_client, self.dataset_id, self.table_id, rows)
@@ -87,119 +89,101 @@ class TestBigQueryHelper(unittest.TestCase):
     dur = duration_pb2.Duration()
     dur.FromTimedelta(datetime.timedelta(seconds=2, microseconds=3))
 
-    mmap_hello=testmessage_pb2.NestedMessage(num=100)
-    mmap_world=testmessage_pb2.NestedMessage(str='yo.')
+    mmap_hello = testmessage_pb2.NestedMessage(num=100)
+    mmap_world = testmessage_pb2.NestedMessage(str='yo.')
 
     msg = testmessage_pb2.TestMessage(
-        str='a',
-        strs=['a', 'b'],
-
-        num=1,
-        nums=[0, 1, 2],
-
-        nested=testmessage_pb2.NestedMessage(num=1, str='a'),
-        nesteds=[
-          testmessage_pb2.NestedMessage(num=1, str='a'),
-          testmessage_pb2.NestedMessage(num=2, str='b'),
-        ],
-
-        empty=empty_pb2.Empty(),
-        empties=[empty_pb2.Empty(), empty_pb2.Empty()],
-
-        e=testmessage_pb2.E1,
-        es=[testmessage_pb2.E0, testmessage_pb2.E2],
-
-        struct=struct0,
-        structs=[struct0, struct1],
-
-        timestamp=ts0,
-        timestamps=[ts0, ts1],
-
-        repeated_container=testmessage_pb2.RepeatedContainer(nums=[1, 2]),
-        duration=dur,
-
-        enum_map={
-          'hello': testmessage_pb2.E1,
-          'world': testmessage_pb2.E2,
-        },
-        scalar_map={'hello': 1, 'world': 2},
-        message_map={'hello': mmap_hello, 'world': mmap_world},
+      str='a',
+      strs=['a', 'b'],
+      num=1,
+      nums=[0, 1, 2],
+      nested=testmessage_pb2.NestedMessage(num=1, str='a'),
+      nesteds=[
+        testmessage_pb2.NestedMessage(num=1, str='a'),
+        testmessage_pb2.NestedMessage(num=2, str='b'),
+      ],
+      empty=empty_pb2.Empty(),
+      empties=[empty_pb2.Empty(), empty_pb2.Empty()],
+      e=testmessage_pb2.E1,
+      es=[testmessage_pb2.E0, testmessage_pb2.E2],
+      struct=struct0,
+      structs=[struct0, struct1],
+      timestamp=ts0,
+      timestamps=[ts0, ts1],
+      repeated_container=testmessage_pb2.RepeatedContainer(nums=[1, 2]),
+      duration=dur,
+      enum_map={
+        'hello': testmessage_pb2.E1,
+        'world': testmessage_pb2.E2,
+      },
+      scalar_map={'hello': 1, 'world': 2},
+      message_map={'hello': mmap_hello, 'world': mmap_world},
     )
     row = bqh.message_to_dict(msg)
 
     expected = {
-        'str': u'a',
-        'strs': [u'a', u'b'],
-        'num': 1,
-        'nums': [0, 1, 2],
-        'nested': {
-            'num': 1,
-            'str': u'a'
-        },
-        'nesteds': [
-            {
-                'num': 1,
-                'str': u'a'
-            },
-            {
-                'num': 2,
-                'str': u'b'
-            },
-        ],
-
-        # empty messages are omitted
-        'e': 'E1',
-        'es': ['E0', 'E2'],
-
-        # structs are compared separately.
-        'timestamp': dt0.isoformat(),
-        'timestamps': [dt0.isoformat(), dt1.isoformat()],
-        'repeated_container': {
-            'nums': [1, 2]
-        },
-        'duration': 2.000003,
-
-        'enum_map': [
-          {'key': u'hello', 'value': 'E1'},
-          {'key': u'world', 'value': 'E2'},
-        ],
-        'scalar_map': [
-          {'key': u'hello', 'value': 1},
-          {'key': u'world', 'value': 2},
-        ],
-        'message_map': [
-          {'key': u'hello', 'value': {'num': 100, 'str': u''}},
-          {'key': u'world', 'value': {'num': 0, 'str': u'yo.'}},
-        ],
+      'str': 'a',
+      'strs': ['a', 'b'],
+      'num': 1,
+      'nums': [0, 1, 2],
+      'nested': {'num': 1, 'str': 'a'},
+      'nesteds': [
+        {'num': 1, 'str': 'a'},
+        {'num': 2, 'str': 'b'},
+      ],
+      # empty messages are omitted
+      'e': 'E1',
+      'es': ['E0', 'E2'],
+      # structs are compared separately.
+      'timestamp': dt0.isoformat(),
+      'timestamps': [dt0.isoformat(), dt1.isoformat()],
+      'repeated_container': {'nums': [1, 2]},
+      'duration': 2.000003,
+      'enum_map': [
+        {'key': 'hello', 'value': 'E1'},
+        {'key': 'world', 'value': 'E2'},
+      ],
+      'scalar_map': [
+        {'key': 'hello', 'value': 1},
+        {'key': 'world', 'value': 2},
+      ],
+      'message_map': [
+        {'key': 'hello', 'value': {'num': 100, 'str': ''}},
+        {'key': 'world', 'value': {'num': 0, 'str': 'yo.'}},
+      ],
     }
 
     # compare structs as JSON values, not strings.
     self.assertEqual(json.loads(row.pop('struct')), {'a': 0})
     self.assertEqual(
-        [json.loads(s) for s in row.pop('structs')],
-        [{'a': 0}, {'a': 1}]
+      [json.loads(s) for s in row.pop('structs')], [{'a': 0}, {'a': 1}]
     )
 
     self.assertEqual(row, expected)
 
   def test_message_to_dict_empty(self):
     row = bqh.message_to_dict(testmessage_pb2.TestMessage())
-    expected = {'e': 'E0', 'str': u'', 'num': 0}
+    expected = {'e': 'E0', 'str': '', 'num': 0}
     self.assertEqual(row, expected)
 
   def test_message_to_dict_repeated_container_with_no_elems(self):
-    row = bqh.message_to_dict(testmessage_pb2.TestMessage(
-        repeated_container=testmessage_pb2.RepeatedContainer()))
+    row = bqh.message_to_dict(
+      testmessage_pb2.TestMessage(
+        repeated_container=testmessage_pb2.RepeatedContainer()
+      )
+    )
     self.assertNotIn('repeated_container', row)
 
   def test_message_to_dict_invalid_enum(self):
     with self.assertRaisesRegexp(
-        ValueError, '^Invalid value -1 for enum type bigquery.E$'):
+      ValueError, '^Invalid value -1 for enum type bigquery.E$'
+    ):
       bqh.message_to_dict(testmessage_pb2.TestMessage(e=-1))
 
   def test_message_to_dict_omit_null(self):
     with self.assertRaisesRegexp(
-        ValueError, '^Invalid value -1 for enum type bigquery.E$'):
+      ValueError, '^Invalid value -1 for enum type bigquery.E$'
+    ):
       bqh.message_to_dict(testmessage_pb2.TestMessage(e=-1))
 
 

@@ -21,13 +21,14 @@ from infra_libs.ts_mon.protos import metrics_pb2
 
 
 class GlobalsTest(unittest.TestCase):
-
   def setUp(self):
-    target = targets.TaskTarget('test_service', 'test_job',
-                                'test_region', 'test_host')
+    target = targets.TaskTarget(
+      'test_service', 'test_job', 'test_region', 'test_host'
+    )
     self.mock_state = interface.State(target=target)
-    self.state_patcher = mock.patch('infra_libs.ts_mon.common.interface.state',
-                                    new=self.mock_state)
+    self.state_patcher = mock.patch(
+      'infra_libs.ts_mon.common.interface.state', new=self.mock_state
+    )
     self.state_patcher.start()
 
   def tearDown(self):
@@ -71,10 +72,12 @@ class GlobalsTest(unittest.TestCase):
     self.assertEqual(1, interface.state.global_monitor.send.call_count)
     self.assertEqual(1, interface.state.global_monitor.failed.call_count)
     proto = interface.state.global_monitor.send.call_args[0][0]
-    self.assertEqual(1,
-        len(proto.metrics_collection[0].metrics_data_set[0].data))
-    self.assertEqual('foo',
-        proto.metrics_collection[0].metrics_data_set[0].metric_name)
+    self.assertEqual(
+      1, len(proto.metrics_collection[0].metrics_data_set[0].data)
+    )
+    self.assertEqual(
+      'foo', proto.metrics_collection[0].metrics_data_set[0].metric_name
+    )
     self.assertFalse(interface.state.global_monitor.wait.called)
 
   def test_flush_async_monitor(self):
@@ -96,10 +99,12 @@ class GlobalsTest(unittest.TestCase):
     interface.flush()
     self.assertEqual(1, interface.state.global_monitor.send.call_count)
     proto = interface.state.global_monitor.send.call_args[0][0]
-    self.assertEqual(1,
-        len(proto.metrics_collection[0].metrics_data_set[0].data))
-    self.assertEqual('foo',
-        proto.metrics_collection[0].metrics_data_set[0].metric_name)
+    self.assertEqual(
+      1, len(proto.metrics_collection[0].metrics_data_set[0].data)
+    )
+    self.assertEqual(
+      'foo', proto.metrics_collection[0].metrics_data_set[0].metric_name
+    )
     interface.state.global_monitor.wait.assert_called_once_with(rpc)
 
   def test_flush_empty(self):
@@ -150,7 +155,8 @@ class GlobalsTest(unittest.TestCase):
     mocked_send = interface.state.global_monitor.send
 
     counter = metrics.CounterMetric(
-        'counter', 'desc', [metrics.StringField('foo')])
+      'counter', 'desc', [metrics.StringField('foo')]
+    )
     interface.register(counter)
 
     # set/flush with task_num=1
@@ -160,7 +166,8 @@ class GlobalsTest(unittest.TestCase):
 
     self.assertEqual(1, mocked_send.call_count)
     data_set = (
-        mocked_send.call_args[0][0].metrics_collection[0].metrics_data_set[0])
+      mocked_send.call_args[0][0].metrics_collection[0].metrics_data_set[0]
+    )
     self.assertEqual('/infra/test/counter', data_set.metric_name)
     self.assertEqual(3, data_set.data[0].int64_value)
 
@@ -170,7 +177,8 @@ class GlobalsTest(unittest.TestCase):
 
     self.assertEqual(2, mocked_send.call_count)
     data_set = (
-        mocked_send.call_args[0][0].metrics_collection[0].metrics_data_set[0])
+      mocked_send.call_args[0][0].metrics_collection[0].metrics_data_set[0]
+    )
     self.assertEqual('/infra/test/counter', data_set.metric_name)
     self.assertEqual(3, data_set.data[0].int64_value)
 
@@ -181,7 +189,8 @@ class GlobalsTest(unittest.TestCase):
 
     self.assertEqual(3, mocked_send.call_count)
     data_set = (
-        mocked_send.call_args[0][0].metrics_collection[0].metrics_data_set[0])
+      mocked_send.call_args[0][0].metrics_collection[0].metrics_data_set[0]
+    )
     self.assertEqual('/infra/test/counter', data_set.metric_name)
     self.assertEqual(4, data_set.data[0].int64_value)
 
@@ -217,9 +226,12 @@ class GlobalsTest(unittest.TestCase):
     # We can't use the mock's call_args_list here because the same object is
     # reused as the argument to both calls and cleared inbetween.
     data_lengths = []
+
     def send(proto):
-      data_lengths.append(len(
-          proto.metrics_collection[0].metrics_data_set[0].data))
+      data_lengths.append(
+        len(proto.metrics_collection[0].metrics_data_set[0].data)
+      )
+
     interface.state.global_monitor.send.side_effect = send
 
     fake_metric = mock.create_autospec(metrics.Metric, spec_set=True)
@@ -241,6 +253,7 @@ class GlobalsTest(unittest.TestCase):
     # We can't use the mock's call_args_list here because the same object is
     # reused as the argument to both calls and cleared inbetween.
     data_lengths = []
+
     def send(proto):
       count = 0
       for coll in proto.metrics_collection:
@@ -248,10 +261,12 @@ class GlobalsTest(unittest.TestCase):
           for _ in data_set.data:
             count += 1
       data_lengths.append(count)
+
     interface.state.global_monitor.send.side_effect = send
 
-    counter = metrics.CounterMetric('counter', 'desc',
-        [metrics.IntegerField('field')])
+    counter = metrics.CounterMetric(
+      'counter', 'desc', [metrics.IntegerField('field')]
+    )
     interface.register(counter)
 
     for i in range(interface.METRICS_DATA_LENGTH_LIMIT + 1):
@@ -274,7 +289,7 @@ class GlobalsTest(unittest.TestCase):
     proto = interface.state.global_monitor.send.call_args[0][0]
     col = proto.metrics_collection
     self.assertEqual(2, len(col))
-    self.assertEqual(123,col[0].metrics_data_set[0].data[0].int64_value)
+    self.assertEqual(123, col[0].metrics_data_set[0].data[0].int64_value)
     self.assertEqual(456, col[1].metrics_data_set[0].data[0].int64_value)
 
     self.assertEqual('service_name', col[0].root_labels[0].key)
@@ -330,8 +345,10 @@ class GlobalsTest(unittest.TestCase):
 
     # Setting this will modify store._values in the middle of iteration.
     delayed_metric = metrics.CounterMetric('foo', 'desc', None)
+
     def send(proto):
       delayed_metric.increment_by(1)
+
     interface.state.global_monitor.send.side_effect = send
 
     for i in range(1001):
@@ -440,10 +457,10 @@ class FakeThreadingEvent(object):
 
 
 class FlushThreadTest(unittest.TestCase):
-
   def setUp(self):
-    mock.patch('infra_libs.ts_mon.common.interface.flush',
-               autospec=True).start()
+    mock.patch(
+      'infra_libs.ts_mon.common.interface.flush', autospec=True
+    ).start()
     interface.flush.return_value = True
     mock.patch('time.time', autospec=True).start()
 
@@ -545,15 +562,21 @@ class GenerateNewProtoTest(unittest.TestCase):
     interface.state = interface.State()
     interface.state.metric_name_prefix = '/infra/test/'
     interface.state.target = targets.TaskTarget(
-        service_name='service', job_name='job', region='region',
-        hostname='hostname', task_num=0)
+      service_name='service',
+      job_name='job',
+      region='region',
+      hostname='hostname',
+      task_num=0,
+    )
 
     interface.state.store = metric_store.InProcessMetricStore(
-        interface.state, time.time)
+      interface.state, time.time
+    )
 
   def test_grouping(self):
-    counter0 = metrics.CounterMetric('counter0', 'desc0',
-        [metrics.IntegerField('test')])
+    counter0 = metrics.CounterMetric(
+      'counter0', 'desc0', [metrics.IntegerField('test')]
+    )
     counter1 = metrics.CounterMetric('counter1', 'desc1', None)
     counter2 = metrics.CounterMetric('counter2', 'desc2', None)
 
@@ -587,7 +610,7 @@ class GenerateNewProtoTest(unittest.TestCase):
 
     self.assertEqual("task_num", first_coll.root_labels[4].key)
     self.assertEqual(0, first_coll.root_labels[4].int64_value)
-    
+
     self.assertEqual("task_num", second_coll.root_labels[4].key)
     self.assertEqual(1, second_coll.root_labels[4].int64_value)
 
@@ -595,20 +618,24 @@ class GenerateNewProtoTest(unittest.TestCase):
     self.assertEqual(1, len(second_coll.metrics_data_set))
 
     data_sets = [
-        first_coll.metrics_data_set[0],
-        first_coll.metrics_data_set[1],
-        second_coll.metrics_data_set[0]
+      first_coll.metrics_data_set[0],
+      first_coll.metrics_data_set[1],
+      second_coll.metrics_data_set[0],
     ]
 
     for i, data_set in enumerate(data_sets):
       self.assertEqual('/infra/test/counter%d' % i, data_set.metric_name)
 
   def test_generate_every_type_of_field(self):
-    counter = metrics.CounterMetric('counter', 'desc', [
+    counter = metrics.CounterMetric(
+      'counter',
+      'desc',
+      [
         metrics.IntegerField('a'),
         metrics.BooleanField('b'),
         metrics.StringField('c'),
-    ])
+      ],
+    )
     interface.register(counter)
     counter.increment({'a': 1, 'b': True, 'c': 'test'})
 
@@ -623,8 +650,7 @@ class GenerateNewProtoTest(unittest.TestCase):
     self.assertEqual(field_type.BOOL, data_set.field_descriptor[1].field_type)
 
     self.assertEqual('c', data_set.field_descriptor[2].name)
-    self.assertEqual(field_type.STRING,
-                     data_set.field_descriptor[2].field_type)
+    self.assertEqual(field_type.STRING, data_set.field_descriptor[2].field_type)
 
     self.assertEqual(1, data_set.data[0].int64_value)
 
@@ -638,8 +664,9 @@ class GenerateNewProtoTest(unittest.TestCase):
     self.assertEqual('test', data_set.data[0].field[2].string_value)
 
   def test_generate_with_target_type(self):
-    counter = metrics.CounterMetric('counter', 'desc', None,
-                                    target_type=my_target_pb2.MyTarget)
+    counter = metrics.CounterMetric(
+      'counter', 'desc', None, target_type=my_target_pb2.MyTarget
+    )
     interface.register(counter)
     with interface.target_context(my_target_pb2.MyTarget(s='x')):
       counter.increment()
@@ -653,8 +680,9 @@ class GenerateNewProtoTest(unittest.TestCase):
     self.assertEqual('x', root_labels[2].string_value)
 
   def test_generate_proto_with_dangerously_set_start_time(self):
-    counter0 = metrics.CounterMetric('counter0', 'desc0',
-        [metrics.IntegerField('test')])
+    counter0 = metrics.CounterMetric(
+      'counter0', 'desc0', [metrics.IntegerField('test')]
+    )
     interface.register(counter0)
     counter0.increment_by(3, {'test': 123})
     counter0.increment_by(3, {'test': 456})

@@ -4,7 +4,6 @@
 
 """Classes representing the monitoring interface for tasks or devices."""
 
-
 import base64
 import httplib2
 import json
@@ -20,9 +19,10 @@ from infra_libs.ts_mon.common import interface
 from infra_libs.ts_mon.common import http_metrics
 from infra_libs.ts_mon.common import pb_to_popo
 from infra_libs.ts_mon.protos import metrics_pb2
-try: # pragma: no cover
+
+try:  # pragma: no cover
   from oauth2client import gce
-except ImportError: # pragma: no cover
+except ImportError:  # pragma: no cover
   # Try oauth2client 3.0.0 location.
   from oauth2client.contrib import gce
 from oauth2client.client import GoogleCredentials
@@ -68,6 +68,7 @@ class AppengineCredentials(CredentialFactory):
       return appengine.AppAssertionCredentials(scopes)
     else:
       import google.auth
+
       credentials, _ = google.auth.default(scopes)
       return credentials
 
@@ -101,9 +102,11 @@ class DelegateServiceAccountCredentials(CredentialFactory):
       http = credentials.authorize(http)
     else:  # pragma: no cover
       import google_auth_httplib2
+
       http = google_auth_httplib2.AuthorizedHttp(credentials, http=http)
     return httplib2_utils.DelegateServiceAccountCredentials(
-        http, self.service_account_email, scopes)
+      http, self.service_account_email, scopes
+    )
 
 
 class Monitor(object):
@@ -136,7 +139,6 @@ class Monitor(object):
 
 
 class HttpsMonitor(Monitor):
-
   _SCOPES = ['https://www.googleapis.com/auth/prodxmon']
 
   def __init__(self, endpoint, credential_factory, http=None, ca_certs=None):
@@ -145,12 +147,14 @@ class HttpsMonitor(Monitor):
     credentials = credential_factory.create(self._SCOPES)
     if http is None:
       http = httplib2_utils.RetriableHttp(
-          httplib2_utils.InstrumentedHttp('acq-mon-api', ca_certs=ca_certs),
-          max_tries=2)
+        httplib2_utils.InstrumentedHttp('acq-mon-api', ca_certs=ca_certs),
+        max_tries=2,
+      )
     if hasattr(credentials, 'authorize'):
       self._http = credentials.authorize(http)
     else:  # pragma: no cover
       import google_auth_httplib2
+
       self._http = google_auth_httplib2.AuthorizedHttp(credentials, http=http)
 
   def encode_to_json(self, metric_pb):
@@ -160,19 +164,28 @@ class HttpsMonitor(Monitor):
     body = self.encode_to_json(metric_pb)
 
     try:
-      resp, content = self._http.request(self._endpoint,
-          method='POST',
-          body=body,
-          headers={'Content-Type': 'application/json'})
+      resp, content = self._http.request(
+        self._endpoint,
+        method='POST',
+        body=body,
+        headers={'Content-Type': 'application/json'},
+      )
       if resp.status == 200:
         self._failed = False
       else:
-        logging.warning('HttpsMonitor.send received status %d: %s', resp.status,
-                        content)
+        logging.warning(
+          'HttpsMonitor.send received status %d: %s', resp.status, content
+        )
         self._failed = True
-    except (ValueError, errors.Error,
-            socket.timeout, socket.error, socket.herror, socket.gaierror,
-            httplib2.HttpLib2Error):
+    except (
+      ValueError,
+      errors.Error,
+      socket.timeout,
+      socket.error,
+      socket.herror,
+      socket.gaierror,
+      httplib2.HttpLib2Error,
+    ):
       logging.exception('HttpsMonitor.send failed')
       self._failed = True
 
@@ -182,6 +195,7 @@ class HttpsMonitor(Monitor):
 
 class DebugMonitor(Monitor):
   """Class which writes metrics to logs or a local file for debugging."""
+
   def __init__(self, filepath=None):
     if filepath is None:
       self._fh = None
@@ -201,6 +215,7 @@ class DebugMonitor(Monitor):
 
 class NullMonitor(Monitor):
   """Class that doesn't send metrics anywhere."""
+
   def send(self, metric_pb):
     pass
 

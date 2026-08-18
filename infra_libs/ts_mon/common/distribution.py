@@ -49,11 +49,14 @@ class _Bucketer(object):
     """
 
     if num_finite_buckets < 0:
-      raise ValueError('num_finite_buckets must be >= 0 (was %d)' %
-          num_finite_buckets)
+      raise ValueError(
+        'num_finite_buckets must be >= 0 (was %d)' % num_finite_buckets
+      )
     if width != 0 and growth_factor != 0:
-      raise ValueError('a Bucketer must be created with either a width or a '
-                       'growth factor, not both')
+      raise ValueError(
+        'a Bucketer must be created with either a width or a '
+        'growth factor, not both'
+      )
 
     self.width = width
     self.growth_factor = growth_factor
@@ -70,24 +73,26 @@ class _Bucketer(object):
 
     # Sanity check the bucket lower bounds we created.
     assert len(self._lower_bounds) == self.total_buckets
-    assert all(x < y for x, y in zip(
-        self._lower_bounds, self._lower_bounds[1:])), (
-        'bucket boundaries must be monotonically increasing')
+    assert all(
+      x < y for x, y in zip(self._lower_bounds, self._lower_bounds[1:])
+    ), 'bucket boundaries must be monotonically increasing'
 
   def __eq__(self, other):
-    return (type(self) is type(other) and
-            self.width == other.width and
-            self.growth_factor == other.growth_factor and
-            self.num_finite_buckets == other.num_finite_buckets and
-            self.scale == other.scale)
+    return (
+      type(self) is type(other)
+      and self.width == other.width
+      and self.growth_factor == other.growth_factor
+      and self.num_finite_buckets == other.num_finite_buckets
+      and self.scale == other.scale
+    )
 
   def _linear_bounds(self):
     return [self.width * i for i in range(self.num_finite_buckets + 1)]
 
   def _exponential_bounds(self):
     return [
-        self.scale * self.growth_factor**i
-        for i in range(self.num_finite_buckets + 1)
+      self.scale * self.growth_factor**i
+      for i in range(self.num_finite_buckets + 1)
     ]
 
   def bucket_for_value(self, value):
@@ -112,15 +117,19 @@ class _Bucketer(object):
 
 def FixedWidthBucketer(width, num_finite_buckets=100):
   """Convenience function that returns a fixed width Bucketer."""
-  return _Bucketer(width=width, growth_factor=0.0,
-      num_finite_buckets=num_finite_buckets)
+  return _Bucketer(
+    width=width, growth_factor=0.0, num_finite_buckets=num_finite_buckets
+  )
 
 
-def GeometricBucketer(growth_factor=10**0.2, num_finite_buckets=100,
-                      scale=1.0):
+def GeometricBucketer(growth_factor=10**0.2, num_finite_buckets=100, scale=1.0):
   """Convenience function that returns a geometric progression Bucketer."""
-  return _Bucketer(width=0, growth_factor=growth_factor,
-      num_finite_buckets=num_finite_buckets, scale=scale)
+  return _Bucketer(
+    width=0,
+    growth_factor=growth_factor,
+    num_finite_buckets=num_finite_buckets,
+    scale=scale,
+  )
 
 
 class Distribution(object):

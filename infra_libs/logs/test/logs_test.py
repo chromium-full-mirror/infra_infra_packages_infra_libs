@@ -11,8 +11,8 @@ import mock
 
 from infra_libs.logs import logs
 
-class InfraFilterTest(unittest.TestCase):
 
+class InfraFilterTest(unittest.TestCase):
   def test_infrafilter_adds_correct_fields(self):
     record = logging.makeLogRecord({})
     infrafilter = logs.InfraFilter('US/Pacific')
@@ -29,17 +29,17 @@ class InfraFilterTest(unittest.TestCase):
   def test_filters_by_module_name(self):
     record = logging.makeLogRecord({})
     infrafilter = logs.InfraFilter(
-        'US/Pacific', module_name_blacklist=r'^other\.module')
+      'US/Pacific', module_name_blacklist=r'^other\.module'
+    )
     self.assertTrue(infrafilter.filter(record))
 
     infrafilter = logs.InfraFilter(
-        'US/Pacific',
-        module_name_blacklist=r'^infra_libs\.logs\.test\.logs_test$')
+      'US/Pacific', module_name_blacklist=r'^infra_libs\.logs\.test\.logs_test$'
+    )
     self.assertFalse(infrafilter.filter(record))
 
 
 class DefaultProgramNameTest(unittest.TestCase):
-
   def setUp(self):
     self.old_argv = copy.copy(sys.argv)
     self.old_package = sys.modules['__main__'].__package__
@@ -64,7 +64,6 @@ class DefaultProgramNameTest(unittest.TestCase):
 
 
 class LogsMaxLengthTest(unittest.TestCase):
-
   def test_small(self):
     self.assertEqual(logs._truncate_if_long('small', 300), 'small')
 

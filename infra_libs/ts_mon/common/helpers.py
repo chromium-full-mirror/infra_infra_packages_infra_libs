@@ -4,7 +4,6 @@
 
 """Helper classes that make it easier to instrument code for monitoring."""
 
-
 from infra_libs.ts_mon.common import metrics
 
 import time
@@ -31,8 +30,13 @@ class ScopedIncrementCounter(object):
                              # the code later raises an exception.
   """
 
-  def __init__(self, counter, label='status', success_value='success',
-               failure_value='failure'):
+  def __init__(
+    self,
+    counter,
+    label='status',
+    success_value='success',
+    failure_value='failure',
+  ):
     self.counter = counter
     self.label = label
     self.success_value = success_value
@@ -102,21 +106,29 @@ class ScopedMeasureTime(object):
   """
 
   _UNITS_PER_SECOND = {
-      metrics.MetricsDataUnits.SECONDS: 1e0,
-      metrics.MetricsDataUnits.MILLISECONDS: 1e3,
-      metrics.MetricsDataUnits.MICROSECONDS: 1e6,
-      metrics.MetricsDataUnits.NANOSECONDS: 1e9,
+    metrics.MetricsDataUnits.SECONDS: 1e0,
+    metrics.MetricsDataUnits.MILLISECONDS: 1e3,
+    metrics.MetricsDataUnits.MICROSECONDS: 1e6,
+    metrics.MetricsDataUnits.NANOSECONDS: 1e9,
   }
 
-  def __init__(self, metric, field='status', success_value='success',
-               failure_value='failure', extra_fields_values=(),
-               time_fn=time.time):
+  def __init__(
+    self,
+    metric,
+    field='status',
+    success_value='success',
+    failure_value='failure',
+    extra_fields_values=(),
+    time_fn=time.time,
+  ):
     assert isinstance(metric, metrics.CumulativeDistributionMetric)
     assert sum(1 for spec in metric.field_spec if spec.name == field) == 1, (
-        'typo in field name `%s`?' % field)
+      'typo in field name `%s`?' % field
+    )
     assert metric.units in self._UNITS_PER_SECOND, (
-        'metric\'s units (%s) is not one of %s' %
-        (metric.units, list(self._UNITS_PER_SECOND.keys())))
+      'metric\'s units (%s) is not one of %s'
+      % (metric.units, list(self._UNITS_PER_SECOND.keys()))
+    )
 
     self._metric = metric
     self._field_values = dict(extra_fields_values)
@@ -131,15 +143,17 @@ class ScopedMeasureTime(object):
 
   def set_status(self, status):
     assert self._start_timestamp is not None, (
-        'set_status must be called only inside with statement')
+      'set_status must be called only inside with statement'
+    )
     self._field_values[self._field] = status
 
   def set_failure(self):
     return self.set_status(self._failure_value)
 
   def __enter__(self):
-    assert self._start_timestamp is None, ('re-use of ScopedMeasureTime '
-                                           'instances detected')
+    assert self._start_timestamp is None, (
+      're-use of ScopedMeasureTime instances detected'
+    )
     self._start_timestamp = self._time_fn()
     return self
 
@@ -151,5 +165,6 @@ class ScopedMeasureTime(object):
       else:
         self._field_values[self._field] = self._failure_value
 
-    self._metric.add(elapsed_seconds * self._units_per_second,
-                     self._field_values)
+    self._metric.add(
+      elapsed_seconds * self._units_per_second, self._field_values
+    )

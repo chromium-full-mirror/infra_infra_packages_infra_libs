@@ -9,7 +9,6 @@ from infra_libs.ts_mon.protos import metrics_pb2
 
 
 class TargetTest(unittest.TestCase):
-
   def setUp(self):
     self.task0 = targets.TaskTarget('serv', 'job', 'reg', 'host', 0)
     self.task1 = targets.TaskTarget('serv', 'job', 'reg', 'host', 0)
@@ -45,7 +44,6 @@ class TargetTest(unittest.TestCase):
 
 
 class DeviceTargetTest(unittest.TestCase):
-
   def test_populate_target_pb(self):
     pb = metrics_pb2.MetricsCollection()
     target = targets.DeviceTarget('reg', 'role', 'net', 'host')
@@ -63,17 +61,20 @@ class DeviceTargetTest(unittest.TestCase):
 
   def test_update_to_dict(self):
     target = targets.DeviceTarget('reg', 'role', 'net', 'host')
-    self.assertEqual({
-      'region': 'reg',
-      'role': 'role',
-      'network': 'net',
-      'hostname': 'host'}, target.to_dict())
+    self.assertEqual(
+      {'region': 'reg', 'role': 'role', 'network': 'net', 'hostname': 'host'},
+      target.to_dict(),
+    )
     target.update({'region': 'other', 'hostname': 'guest'})
-    self.assertEqual({
-      'region': 'other',
-      'role': 'role',
-      'network': 'net',
-      'hostname': 'guest'}, target.to_dict())
+    self.assertEqual(
+      {
+        'region': 'other',
+        'role': 'role',
+        'network': 'net',
+        'hostname': 'guest',
+      },
+      target.to_dict(),
+    )
 
   def test_update_private_field(self):
     target = targets.DeviceTarget('reg', 'role', 'net', 'host')
@@ -89,7 +90,6 @@ class DeviceTargetTest(unittest.TestCase):
 
 
 class TaskTargetTest(unittest.TestCase):
-
   def test_populate_target_pb(self):
     pb = metrics_pb2.MetricsCollection()
     target = targets.TaskTarget('serv', 'job', 'reg', 'host')
@@ -106,19 +106,27 @@ class TaskTargetTest(unittest.TestCase):
 
   def test_update_to_dict(self):
     target = targets.TaskTarget('serv', 'job', 'reg', 'host', 5)
-    self.assertEqual({
-      'service_name': 'serv',
-      'job_name': 'job',
-      'region': 'reg',
-      'hostname': 'host',
-      'task_num': 5}, target.to_dict())
+    self.assertEqual(
+      {
+        'service_name': 'serv',
+        'job_name': 'job',
+        'region': 'reg',
+        'hostname': 'host',
+        'task_num': 5,
+      },
+      target.to_dict(),
+    )
     target.update({'region': 'other', 'hostname': 'guest'})
-    self.assertEqual({
-      'service_name': 'serv',
-      'job_name': 'job',
-      'region': 'other',
-      'hostname': 'guest',
-      'task_num': 5}, target.to_dict())
+    self.assertEqual(
+      {
+        'service_name': 'serv',
+        'job_name': 'job',
+        'region': 'other',
+        'hostname': 'guest',
+        'task_num': 5,
+      },
+      target.to_dict(),
+    )
 
   def test_update_private_field(self):
     target = targets.TaskTarget('serv', 'job', 'reg', 'host')

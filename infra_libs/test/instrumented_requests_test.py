@@ -32,51 +32,79 @@ class InstrumentedRequestsTest(unittest.TestCase):
   def test_success_status(self):
     self.hook(self.response)
 
-    self.assertEquals(1, http_metrics.response_status.get(
-        {'name': 'foo', 'client': 'requests', 'status': 200}))
-    self.assertIsNone(http_metrics.response_status.get(
-        {'name': 'foo', 'client': 'requests', 'status': 404}))
+    self.assertEquals(
+      1,
+      http_metrics.response_status.get(
+        {'name': 'foo', 'client': 'requests', 'status': 200}
+      ),
+    )
+    self.assertIsNone(
+      http_metrics.response_status.get(
+        {'name': 'foo', 'client': 'requests', 'status': 404}
+      )
+    )
 
   def test_error_status(self):
     self.response.status_code = 404
     self.hook(self.response)
 
-    self.assertIsNone(http_metrics.response_status.get(
-        {'name': 'foo', 'client': 'requests', 'status': 200}))
-    self.assertEquals(1, http_metrics.response_status.get(
-        {'name': 'foo', 'client': 'requests', 'status': 404}))
+    self.assertIsNone(
+      http_metrics.response_status.get(
+        {'name': 'foo', 'client': 'requests', 'status': 200}
+      )
+    )
+    self.assertEquals(
+      1,
+      http_metrics.response_status.get(
+        {'name': 'foo', 'client': 'requests', 'status': 404}
+      ),
+    )
 
   def test_response_bytes_none(self):
     self.hook(self.response)
 
-    self.assertEquals(0, http_metrics.response_bytes.get(
-        {'name': 'foo', 'client': 'requests'}).sum)
+    self.assertEquals(
+      0,
+      http_metrics.response_bytes.get(
+        {'name': 'foo', 'client': 'requests'}
+      ).sum,
+    )
 
   def test_response_bytes(self):
     self.response.headers['content-length'] = '7'
     self.hook(self.response)
 
-    self.assertEquals(7, http_metrics.response_bytes.get(
-        {'name': 'foo', 'client': 'requests'}).sum)
+    self.assertEquals(
+      7,
+      http_metrics.response_bytes.get(
+        {'name': 'foo', 'client': 'requests'}
+      ).sum,
+    )
 
   def test_request_bytes_none(self):
     self.hook(self.response)
 
-    self.assertEquals(0, http_metrics.request_bytes.get(
-        {'name': 'foo', 'client': 'requests'}).sum)
+    self.assertEquals(
+      0,
+      http_metrics.request_bytes.get({'name': 'foo', 'client': 'requests'}).sum,
+    )
 
   def test_request_bytes(self):
     self.response.request.headers['content-length'] = '5'
     self.hook(self.response)
 
-    self.assertEquals(5, http_metrics.request_bytes.get(
-        {'name': 'foo', 'client': 'requests'}).sum)
+    self.assertEquals(
+      5,
+      http_metrics.request_bytes.get({'name': 'foo', 'client': 'requests'}).sum,
+    )
 
   def test_durations(self):
     self.hook(self.response)
 
-    self.assertEquals(2500, http_metrics.durations.get(
-        {'name': 'foo', 'client': 'requests'}).sum)
+    self.assertEquals(
+      2500,
+      http_metrics.durations.get({'name': 'foo', 'client': 'requests'}).sum,
+    )
 
   @staticmethod
   def _setup_wrap(hooks=None, side_effect=None):
@@ -87,7 +115,8 @@ class InstrumentedRequestsTest(unittest.TestCase):
     if hooks:
       kwargs = {'hooks': hooks}
     instrumented_requests._wrap(
-        '_instrumented_test', 'foo', 'http://example.com', **kwargs)
+      '_instrumented_test', 'foo', 'http://example.com', **kwargs
+    )
     return requests._instrumented_test
 
   def test_wrap(self):
@@ -114,28 +143,58 @@ class InstrumentedRequestsTest(unittest.TestCase):
     with self.assertRaises(requests.exceptions.ReadTimeout):
       self._setup_wrap(side_effect=requests.exceptions.ReadTimeout)
 
-    self.assertIsNone(http_metrics.response_status.get(
-        {'name': 'foo', 'client': 'requests', 'status': 200}))
-    self.assertEquals(1, http_metrics.response_status.get(
-        {'name': 'foo', 'client': 'requests',
-         'status': http_metrics.STATUS_TIMEOUT}))
+    self.assertIsNone(
+      http_metrics.response_status.get(
+        {'name': 'foo', 'client': 'requests', 'status': 200}
+      )
+    )
+    self.assertEquals(
+      1,
+      http_metrics.response_status.get(
+        {
+          'name': 'foo',
+          'client': 'requests',
+          'status': http_metrics.STATUS_TIMEOUT,
+        }
+      ),
+    )
 
   def test_wrap_errors_out(self):
     with self.assertRaises(requests.exceptions.ConnectionError):
       self._setup_wrap(side_effect=requests.exceptions.ConnectionError)
 
-    self.assertIsNone(http_metrics.response_status.get(
-        {'name': 'foo', 'client': 'requests', 'status': 200}))
-    self.assertEquals(1, http_metrics.response_status.get(
-        {'name': 'foo', 'client': 'requests',
-         'status': http_metrics.STATUS_ERROR}))
+    self.assertIsNone(
+      http_metrics.response_status.get(
+        {'name': 'foo', 'client': 'requests', 'status': 200}
+      )
+    )
+    self.assertEquals(
+      1,
+      http_metrics.response_status.get(
+        {
+          'name': 'foo',
+          'client': 'requests',
+          'status': http_metrics.STATUS_ERROR,
+        }
+      ),
+    )
 
   def test_wrap_raises_other_exception(self):
     with self.assertRaises(requests.exceptions.RequestException):
       self._setup_wrap(side_effect=requests.exceptions.RequestException)
 
-    self.assertIsNone(http_metrics.response_status.get(
-        {'name': 'foo', 'client': 'requests', 'status': 200}))
-    self.assertEquals(1, http_metrics.response_status.get(
-        {'name': 'foo', 'client': 'requests',
-         'status': http_metrics.STATUS_EXCEPTION}))
+    self.assertIsNone(
+      http_metrics.response_status.get(
+        {'name': 'foo', 'client': 'requests', 'status': 200}
+      )
+    )
+    self.assertEquals(
+      1,
+      http_metrics.response_status.get(
+        {
+          'name': 'foo',
+          'client': 'requests',
+          'status': http_metrics.STATUS_EXCEPTION,
+        }
+      ),
+    )

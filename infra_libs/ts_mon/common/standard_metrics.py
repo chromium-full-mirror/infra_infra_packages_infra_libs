@@ -8,9 +8,10 @@ from infra_libs.ts_mon.common import metrics
 
 
 up = metrics.BooleanMetric(
-    'presence/up',
-    'Set to True when the program is running, missing otherwise.',
-    None)
+  'presence/up',
+  'Set to True when the program is running, missing otherwise.',
+  None,
+)
 
 
 def init():

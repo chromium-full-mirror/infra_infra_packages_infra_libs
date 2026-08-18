@@ -18,9 +18,11 @@ class MonitoringDecreasingValueError(MonitoringError):
     self.new_value = new_value
 
   def __str__(self):
-    return ('Monotonically increasing metric "%s" was given value "%s", which '
-            'is not greater than or equal to "%s".' % (
-                self.metric, self.new_value, self.old_value))
+    return (
+      'Monotonically increasing metric "%s" was given value "%s", which '
+      'is not greater than or equal to "%s".'
+      % (self.metric, self.new_value, self.old_value)
+    )
 
 
 class MonitoringDuplicateRegistrationError(MonitoringError):
@@ -31,7 +33,8 @@ class MonitoringDuplicateRegistrationError(MonitoringError):
 
   def __str__(self):
     return 'Different metrics with the same name "%s" were both registered.' % (
-        self.metric)
+      self.metric
+    )
 
 
 class MonitoringIncrementUnsetValueError(MonitoringError):
@@ -42,7 +45,8 @@ class MonitoringIncrementUnsetValueError(MonitoringError):
 
   def __str__(self):
     return 'Metric "%s" was incremented without first setting a value.' % (
-        self.metric)
+      self.metric
+    )
 
 
 class MonitoringInvalidValueTypeError(MonitoringError):
@@ -54,7 +58,10 @@ class MonitoringInvalidValueTypeError(MonitoringError):
 
   def __str__(self):
     return 'Metric "%s" was given invalid value "%s" (%s).' % (
-        self.metric, self.value, type(self.value))
+      self.metric,
+      self.value,
+      type(self.value),
+    )
 
 
 class MonitoringInvalidFieldTypeError(MonitoringError):
@@ -67,7 +74,11 @@ class MonitoringInvalidFieldTypeError(MonitoringError):
 
   def __str__(self):
     return 'Metric "%s" was given field "%s" with invalid value "%s" (%s).' % (
-        self.metric, self.field, self.value, type(self.value))
+      self.metric,
+      self.field,
+      self.value,
+      type(self.value),
+    )
 
 
 class MonitoringTooManyFieldsError(MonitoringError):
@@ -79,7 +90,10 @@ class MonitoringTooManyFieldsError(MonitoringError):
 
   def __str__(self):
     return 'Metric "%s" was given too many (%d > 7) fields: %s.' % (
-        self.metric, len(self.fields), self.fields)
+      self.metric,
+      len(self.fields),
+      self.fields,
+    )
 
 
 class MonitoringNoConfiguredMonitorError(MonitoringError):
@@ -91,7 +105,8 @@ class MonitoringNoConfiguredMonitorError(MonitoringError):
   def __str__(self):
     if self.metric is not None:
       return 'Metric "%s" was sent before initializing the global Monitor.' % (
-          self.metric)
+        self.metric
+      )
     else:
       return 'Metrics were sent before initializing the global Monitor.'
 
@@ -113,8 +128,9 @@ class MonitoringFailedToFlushAllMetricsError(MonitoringError):
     self.error_count = error_count
 
   def __str__(self):
-    return ('Failed to flush %d metrics. See tracebacks above' %
-            (self.error_count))
+    return 'Failed to flush %d metrics. See tracebacks above' % (
+      self.error_count
+    )
 
 
 class MetricDefinitionError(MonitoringError):
@@ -131,4 +147,7 @@ class WrongFieldsError(MonitoringError):
 
   def __str__(self):
     return 'Metric "%s" is defined with %s fields but was given %s' % (
-        self.metric_name, self.expected, self.got)
+      self.metric_name,
+      self.expected,
+      self.got,
+    )
