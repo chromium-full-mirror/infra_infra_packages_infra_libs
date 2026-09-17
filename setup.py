@@ -7,9 +7,12 @@ from setuptools import setup, find_packages
 
 setup(
   name='infra_libs',
-  version='2.4.0',
+  version='2.4.1',
   description='Chrome Infra Libraries',
   long_description='Chrome Infra Libraries',
+  author='The Chromium Authors',
+  author_email='infra-dev@chromium.org',
+  url='https://chromium.googlesource.com/infra/infra/+/main/packages/infra_libs',
   classifiers=[
     'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3.9',
