@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import json
-import os
+import os  # noqa: F401
 import socket
 import time
 import unittest

@@ -4,21 +4,21 @@
 
 """Classes representing the monitoring interface for tasks or devices."""
 
-import base64
+import base64  # noqa: F401
 import httplib2
 import json
 import logging
 import six
 import socket
-import traceback
+import traceback  # noqa: F401
 
-from googleapiclient import discovery
+from googleapiclient import discovery  # noqa: F401
 from googleapiclient import errors
 from infra_libs import httplib2_utils
-from infra_libs.ts_mon.common import interface
-from infra_libs.ts_mon.common import http_metrics
+from infra_libs.ts_mon.common import interface  # noqa: F401
+from infra_libs.ts_mon.common import http_metrics  # noqa: F401
 from infra_libs.ts_mon.common import pb_to_popo
-from infra_libs.ts_mon.protos import metrics_pb2
+from infra_libs.ts_mon.protos import metrics_pb2  # noqa: F401
 
 try:  # pragma: no cover
   from oauth2client import gce

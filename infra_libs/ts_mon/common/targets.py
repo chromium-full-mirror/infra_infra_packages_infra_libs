@@ -42,9 +42,8 @@ class Target(object):
     return {name: getattr(self, name) for name in self._fields}
 
   def __eq__(self, other):
-    # pylint: disable=unidiomatic-typecheck
     return (
-      type(self) == type(other)
+      type(self) == type(other)  # noqa: E721
       and self._fields == other._fields
       and all(
         getattr(self, name) == getattr(other, name) for name in self._fields

@@ -9,7 +9,7 @@ import unittest
 
 import mock
 
-from infra_libs.ts_mon.common import distribution
+from infra_libs.ts_mon.common import distribution  # noqa: F401
 from infra_libs.ts_mon.common import errors
 from infra_libs.ts_mon.common import interface
 from infra_libs.ts_mon.common import metric_store
@@ -58,7 +58,6 @@ class GlobalsTest(unittest.TestCase):
     interface.state.global_monitor.send.return_value = None
     interface.state.global_monitor.failed.return_value = False
 
-    # pylint: disable=unused-argument
     def populate_data_set(pb):
       pb.metric_name = 'foo'
 
@@ -86,7 +85,6 @@ class GlobalsTest(unittest.TestCase):
     rpc = object()
     interface.state.global_monitor.send.return_value = rpc
 
-    # pylint: disable=unused-argument
     def populate_data_set(pb):
       pb.metric_name = 'foo'
 
@@ -219,7 +217,6 @@ class GlobalsTest(unittest.TestCase):
     interface.state.target = mock.create_autospec(targets.Target)
     interface.state.target.__hash__.return_value = 42
 
-    # pylint: disable=unused-argument
     def populate_data_set(pb):
       pb.metric_name = 'foo'
 
@@ -334,7 +331,6 @@ class GlobalsTest(unittest.TestCase):
     interface.state.target = mock.create_autospec(targets.Target)
     interface.state.target.__hash__.return_value = 42
 
-    # pylint: disable=unused-argument
     def populate_data_set(pb):
       pb.metric_name = 'foo'
 

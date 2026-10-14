@@ -6,7 +6,7 @@ import datetime
 import json
 import mock
 import unittest
-from mock import patch
+from mock import patch  # noqa: F401
 
 from google.protobuf import duration_pb2
 from google.protobuf import empty_pb2

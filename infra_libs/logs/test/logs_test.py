@@ -7,7 +7,7 @@ import logging
 import sys
 import unittest
 
-import mock
+import mock  # noqa: F401
 
 from infra_libs.logs import logs
 

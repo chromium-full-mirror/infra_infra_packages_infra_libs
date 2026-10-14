@@ -125,7 +125,6 @@ def read_json_as_utf8(filename=None, text=None):
 
 # We're trying to be compatible with Python3 tempfile.TemporaryDirectory
 # context manager here. And they used 'dir' as a keyword argument.
-# pylint: disable=redefined-builtin
 @contextlib.contextmanager
 def temporary_directory(
   suffix="", prefix="tmp", dir=None, keep_directory=False

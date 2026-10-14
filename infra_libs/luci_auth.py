@@ -132,7 +132,6 @@ class LUCICredentials(oauth2client.client.OAuth2Credentials):
     self._http = http
 
   def _refresh(self, _http_request):
-    # pylint: disable=attribute-defined-outside-init
     # All fields here are 'inherited' from OAuth2Credentials.
     self.access_token, self.token_expiry = get_access_token(
       self._scopes, environ=self._environ, http=self._http

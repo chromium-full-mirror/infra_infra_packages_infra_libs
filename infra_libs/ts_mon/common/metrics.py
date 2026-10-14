@@ -4,7 +4,7 @@
 
 """Classes representing individual metrics that can be sent."""
 
-import copy
+import copy  # noqa: F401
 import inspect
 import re
 
@@ -14,7 +14,7 @@ from infra_libs.ts_mon.common import errors
 from infra_libs.ts_mon.common import interface
 from infra_libs.ts_mon.protos import metrics_pb2
 import six
-from six.moves import range  # pylint: disable=redefined-builtin
+from six.moves import range
 
 
 MICROSECONDS_PER_SECOND = 1000000
@@ -37,11 +37,9 @@ class Field(object):
     self.name = name
 
   def __eq__(self, other):
-    # pylint: disable=unidiomatic-typecheck
-    return type(self) == type(other) and self.__dict__ == other.__dict__
+    return type(self) == type(other) and self.__dict__ == other.__dict__  # noqa: E721
 
   def validate_value(self, metric_name, value):
-    # pylint: disable=isinstance-second-argument-not-valid-type
     if not isinstance(value, self.allowed_python_types):
       raise errors.MonitoringInvalidFieldTypeError(
         metric_name, self.name, value
@@ -162,8 +160,7 @@ class Metric(object):
     interface.register(self)
 
   def __eq__(self, other):
-    # pylint: disable=unidiomatic-typecheck
-    return type(self) == type(other) and self.__dict__ == other.__dict__
+    return type(self) == type(other) and self.__dict__ == other.__dict__  # noqa: E721
 
   @property
   def field_spec(self):
@@ -414,7 +411,7 @@ class BooleanMetric(Metric):
     return False
 
 
-class NumericMetric(Metric):  # pylint: disable=abstract-method
+class NumericMetric(Metric):
   """Abstract base class for numeric (int or float) metrics."""
 
   def increment(self, fields=None, target_fields=None):

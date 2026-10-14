@@ -6,7 +6,7 @@ import collections
 import copy
 import json
 import logging
-import os
+import os  # noqa: F401
 import re
 import socket
 import sys
@@ -265,7 +265,7 @@ class HttpMock(object):
       compiled_uri = re.compile(uri)
       if not isinstance(headers, dict):
         raise TypeError("'headers' must be a dict")
-      if not 'status' in headers:
+      if 'status' not in headers:
         raise ValueError("'headers' must have 'status' as a key")
 
       new_headers = copy.copy(headers)
@@ -275,7 +275,6 @@ class HttpMock(object):
         raise TypeError("'body' must be a string, got %s" % type(body))
       self._uris.append((compiled_uri, new_headers, body))
 
-  # pylint: disable=unused-argument
   def request(
     self,
     uri,

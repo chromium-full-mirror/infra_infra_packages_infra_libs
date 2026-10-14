@@ -7,7 +7,7 @@ import argparse
 import json
 import os
 import requests
-import tempfile
+import tempfile  # noqa: F401
 import unittest
 
 import mock

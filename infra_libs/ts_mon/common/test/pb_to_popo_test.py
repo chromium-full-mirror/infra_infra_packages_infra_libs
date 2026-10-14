@@ -4,7 +4,7 @@
 
 import unittest
 
-from infra_libs.ts_mon.common import monitors
+from infra_libs.ts_mon.common import monitors  # noqa: F401
 from infra_libs.ts_mon.common import pb_to_popo
 from infra_libs.ts_mon.protos import metrics_pb2
 

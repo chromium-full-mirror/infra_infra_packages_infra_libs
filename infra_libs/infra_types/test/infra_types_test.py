@@ -27,7 +27,7 @@ class TestFreeze(unittest.TestCase):
     self.assertNotEqual(f, {'cat': 20, 'dog': 10})
 
   def testList(self):
-    l = [1, 2, {'bob': 100}]
+    l = [1, 2, {'bob': 100}]  # noqa: E741
     f = infra_types.freeze(l)
     self.assertSequenceEqual(l, f)
     self.assertIsInstance(f, tuple)
@@ -64,7 +64,7 @@ class TestThaw(unittest.TestCase):
     self.assertIsInstance(t, collections.OrderedDict)
 
   def testList(self):
-    l = [1, 2, {'bob': 100}]
+    l = [1, 2, {'bob': 100}]  # noqa: E741
     f = infra_types.freeze(l)
     t = infra_types.thaw(f)
     self.assertSequenceEqual(l, f)

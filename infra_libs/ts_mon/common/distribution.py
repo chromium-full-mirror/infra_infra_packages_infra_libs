@@ -4,7 +4,7 @@
 
 import bisect
 import collections
-from six.moves import range  # pylint: disable=redefined-builtin
+from six.moves import range
 
 
 class _Bucketer(object):

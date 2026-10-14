@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 import logging
-import os
-import threading
-import time
+import os  # noqa: F401
+import threading  # noqa: F401
+import time  # noqa: F401
 
 from google.protobuf import duration_pb2
 from google.protobuf import json_format

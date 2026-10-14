@@ -38,7 +38,7 @@ import logging
 import random
 import threading
 import time
-import traceback
+import traceback  # noqa: F401
 
 from google.protobuf import message
 from infra_libs.ts_mon.common import errors
@@ -175,7 +175,7 @@ def _generate_proto():
   proto = metrics_pb2.MetricsPayload()
 
   # Key: Target, value: MetricsCollection.
-  collections = {}  # pylint: disable=redefined-outer-name
+  collections = {}
 
   # Key: (Target, metric name) tuple, value: MetricsDataSet.
   data_sets = {}

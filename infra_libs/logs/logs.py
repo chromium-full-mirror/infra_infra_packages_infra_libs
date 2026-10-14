@@ -362,7 +362,7 @@ def _add_file_handlers(options, logger):  # pragma: no cover
     )
 
 
-def _truncate_if_long(l, max_length):
+def _truncate_if_long(l, max_length):  # noqa: E741
   if not max_length or len(l) <= max_length:
     return l
   if max_length < 100:
